@@ -1,0 +1,1911 @@
+{
+  "version": "2.6.2",
+  "summary": {
+    "title": "Juice Shop Threat Model ",
+    "owner": "Salma Zrd",
+    "description": "Threat model for OWASP Juice Shop developed as part of a DevSecOps internship project. The objective is to identify security threats using the STRIDE methodology before implementing automated security controls.",
+    "id": 0
+  },
+  "detail": {
+    "contributors": [],
+    "diagrams": [
+      {
+        "id": 0,
+        "title": "Juice Shop Architecture",
+        "diagramType": "STRIDE",
+        "placeholder": "New STRIDE diagram description",
+        "thumbnail": "./public/content/images/thumbnail.stride.jpg",
+        "version": "2.6.2",
+        "cells": [
+          {
+            "position": {
+              "x": 63.75,
+              "y": 60
+            },
+            "size": {
+              "width": 112.5,
+              "height": 60
+            },
+            "attrs": {
+              "text": {
+                "text": "User"
+              },
+              "body": {
+                "stroke": "red",
+                "strokeWidth": 2.5,
+                "strokeDasharray": null
+              }
+            },
+            "visible": true,
+            "shape": "actor",
+            "zIndex": 1,
+            "ports": {
+              "groups": {
+                "top": {
+                  "position": "top",
+                  "attrs": {
+                    "circle": {
+                      "r": 4,
+                      "magnet": true,
+                      "stroke": "#5F95FF",
+                      "strokeWidth": 1,
+                      "fill": "#fff",
+                      "style": {
+                        "visibility": "hidden"
+                      }
+                    }
+                  }
+                },
+                "right": {
+                  "position": "right",
+                  "attrs": {
+                    "circle": {
+                      "r": 4,
+                      "magnet": true,
+                      "stroke": "#5F95FF",
+                      "strokeWidth": 1,
+                      "fill": "#fff",
+                      "style": {
+                        "visibility": "hidden"
+                      }
+                    }
+                  }
+                },
+                "bottom": {
+                  "position": "bottom",
+                  "attrs": {
+                    "circle": {
+                      "r": 4,
+                      "magnet": true,
+                      "stroke": "#5F95FF",
+                      "strokeWidth": 1,
+                      "fill": "#fff",
+                      "style": {
+                        "visibility": "hidden"
+                      }
+                    }
+                  }
+                },
+                "left": {
+                  "position": "left",
+                  "attrs": {
+                    "circle": {
+                      "r": 4,
+                      "magnet": true,
+                      "stroke": "#5F95FF",
+                      "strokeWidth": 1,
+                      "fill": "#fff",
+                      "style": {
+                        "visibility": "hidden"
+                      }
+                    }
+                  }
+                }
+              },
+              "items": [
+                {
+                  "group": "top",
+                  "id": "156b6f9f-c850-4483-a9a7-f423d29baf0e"
+                },
+                {
+                  "group": "right",
+                  "id": "a278a438-546a-446b-aa5b-249000dccf13"
+                },
+                {
+                  "group": "bottom",
+                  "id": "8ad9877c-615c-4d47-9bfa-60525a4791e1"
+                },
+                {
+                  "group": "left",
+                  "id": "630d0ac9-bf90-41d6-abff-117db3c4f79e"
+                }
+              ]
+            },
+            "id": "396f8ba9-fdcd-4037-aab3-717b2e04fc42",
+            "data": {
+              "type": "tm.Actor",
+              "name": "User",
+              "description": "",
+              "isTrustBoundary": false,
+              "outOfScope": false,
+              "reasonOutOfScope": "",
+              "hasOpenThreats": true,
+              "providesAuthentication": false,
+              "threats": [
+                {
+                  "id": "4d0b13e8-30e7-4156-b059-52aadeb08862",
+                  "title": "Utilisateur malveillant — Brute Force login",
+                  "status": "Open",
+                  "severity": "High",
+                  "type": "Spoofing",
+                  "description": "Un attaquant essaie des milliers de combinaisons\n              email/mot de passe automatiquement pour\n              accéder au compte d'un autre utilisateur.\n              Juice Shop n'a pas de limite de tentatives.\n",
+                  "mitigation": " Rate limiting sur le login,\n              blocage après X tentatives échouées,\n              CAPTCHA, authentification multi-facteur",
+                  "modelType": "STRIDE",
+                  "new": false,
+                  "number": 32,
+                  "score": ""
+                },
+                {
+                  "id": "268488a8-1307-4a7e-bb35-b6d020ef0c99",
+                  "title": "Utilisateur malveillant — Attaque par rejeu (Replay Attack)",
+                  "status": "Open",
+                  "severity": "High",
+                  "type": "Spoofing",
+                  "description": "Un attaquant intercepte un token JWT valide\n              d'un autre utilisateur et l'utilise pour\n              se faire passer pour lui dans ses requêtes.\n",
+                  "mitigation": "Tokens JWT avec expiration courte,\n              liste noire des tokens révoqués,\n              lier le token à l'IP ou User-Agent",
+                  "modelType": "STRIDE",
+                  "new": false,
+                  "number": 33,
+                  "score": ""
+                },
+                {
+                  "id": "daa4b1d6-cfe8-4c67-ba0e-896cfa9aa81b",
+                  "title": "Répudiation d'actions",
+                  "status": "Open",
+                  "severity": "Medium",
+                  "type": "Repudiation",
+                  "description": "Absence de traçabilité fiable côté serveur   ",
+                  "mitigation": "l'utilisateur peut nier ses actions Journalisation côté serveur (qui, quoi, quand).",
+                  "modelType": "STRIDE",
+                  "new": false,
+                  "number": 41,
+                  "score": ""
+                }
+              ],
+              "threatFrequency": {
+                "spoofing": 2,
+                "repudiation": 1
+              }
+            }
+          },
+          {
+            "position": {
+              "x": 329.75,
+              "y": 60
+            },
+            "size": {
+              "width": 112.5,
+              "height": 60
+            },
+            "attrs": {
+              "text": {
+                "text": "Google OAuth 2.0"
+              },
+              "body": {
+                "stroke": "red",
+                "strokeWidth": 2.5,
+                "strokeDasharray": null
+              }
+            },
+            "visible": true,
+            "shape": "actor",
+            "zIndex": 2,
+            "ports": {
+              "groups": {
+                "top": {
+                  "position": "top",
+                  "attrs": {
+                    "circle": {
+                      "r": 4,
+                      "magnet": true,
+                      "stroke": "#5F95FF",
+                      "strokeWidth": 1,
+                      "fill": "#fff",
+                      "style": {
+                        "visibility": "hidden"
+                      }
+                    }
+                  }
+                },
+                "right": {
+                  "position": "right",
+                  "attrs": {
+                    "circle": {
+                      "r": 4,
+                      "magnet": true,
+                      "stroke": "#5F95FF",
+                      "strokeWidth": 1,
+                      "fill": "#fff",
+                      "style": {
+                        "visibility": "hidden"
+                      }
+                    }
+                  }
+                },
+                "bottom": {
+                  "position": "bottom",
+                  "attrs": {
+                    "circle": {
+                      "r": 4,
+                      "magnet": true,
+                      "stroke": "#5F95FF",
+                      "strokeWidth": 1,
+                      "fill": "#fff",
+                      "style": {
+                        "visibility": "hidden"
+                      }
+                    }
+                  }
+                },
+                "left": {
+                  "position": "left",
+                  "attrs": {
+                    "circle": {
+                      "r": 4,
+                      "magnet": true,
+                      "stroke": "#5F95FF",
+                      "strokeWidth": 1,
+                      "fill": "#fff",
+                      "style": {
+                        "visibility": "hidden"
+                      }
+                    }
+                  }
+                }
+              },
+              "items": [
+                {
+                  "group": "top",
+                  "id": "156b6f9f-c850-4483-a9a7-f423d29baf0e"
+                },
+                {
+                  "group": "right",
+                  "id": "a278a438-546a-446b-aa5b-249000dccf13"
+                },
+                {
+                  "group": "bottom",
+                  "id": "8ad9877c-615c-4d47-9bfa-60525a4791e1"
+                },
+                {
+                  "group": "left",
+                  "id": "630d0ac9-bf90-41d6-abff-117db3c4f79e"
+                }
+              ]
+            },
+            "id": "a1af8be4-3f12-4866-9dc5-ee9f78e87f07",
+            "data": {
+              "type": "tm.Actor",
+              "name": "Google OAuth 2.0",
+              "description": "",
+              "isTrustBoundary": false,
+              "outOfScope": false,
+              "reasonOutOfScope": "",
+              "hasOpenThreats": true,
+              "providesAuthentication": false,
+              "threats": [
+                {
+                  "id": "1d878712-fb19-4429-9926-c3818d3f4007",
+                  "title": "Phishing — Fausse page Google OAuth",
+                  "status": "Open",
+                  "severity": "High",
+                  "type": "Spoofing",
+                  "description": "Un attaquant crée une fausse page de login Google\n              qui ressemble à l'authentification OAuth légitime.\n              L'utilisateur entre ses identifiants Google\n              sur la fausse page — ils sont volés.\n",
+                  "mitigation": " Afficher clairement l'URL de redirection,\n              utiliser PKCE,\n              éduquer les utilisateurs à vérifier l'URL",
+                  "modelType": "STRIDE",
+                  "new": false,
+                  "number": 34,
+                  "score": ""
+                },
+                {
+                  "id": "69ed858a-0d24-4ad4-834a-45c05ab79914",
+                  "title": "Token OAuth volé — Accès non autorisé",
+                  "status": "Open",
+                  "severity": "High",
+                  "type": "Spoofing",
+                  "description": "Si le token OAuth retourné par Google\n              est intercepté pendant la redirection,\n              un attaquant peut l'utiliser pour\n              se connecter à la place de l'utilisateur.\n",
+                  "mitigation": "Utiliser PKCE (Proof Key for Code Exchange),\n              valider le state parameter anti-CSRF,\n              HTTPS obligatoire sur la redirect_uri",
+                  "modelType": "STRIDE",
+                  "new": false,
+                  "number": 35,
+                  "score": ""
+                }
+              ],
+              "threatFrequency": {
+                "spoofing": 2,
+                "repudiation": 1
+              }
+            }
+          },
+          {
+            "position": {
+              "x": 230,
+              "y": 210
+            },
+            "size": {
+              "width": 60,
+              "height": 60
+            },
+            "attrs": {
+              "text": {
+                "text": "Angular SPA"
+              },
+              "body": {
+                "stroke": "red",
+                "strokeWidth": 2.5,
+                "strokeDasharray": null
+              }
+            },
+            "visible": true,
+            "shape": "process",
+            "zIndex": 3,
+            "ports": {
+              "groups": {
+                "top": {
+                  "position": "top",
+                  "attrs": {
+                    "circle": {
+                      "r": 4,
+                      "magnet": true,
+                      "stroke": "#5F95FF",
+                      "strokeWidth": 1,
+                      "fill": "#fff",
+                      "style": {
+                        "visibility": "hidden"
+                      }
+                    }
+                  }
+                },
+                "right": {
+                  "position": "right",
+                  "attrs": {
+                    "circle": {
+                      "r": 4,
+                      "magnet": true,
+                      "stroke": "#5F95FF",
+                      "strokeWidth": 1,
+                      "fill": "#fff",
+                      "style": {
+                        "visibility": "hidden"
+                      }
+                    }
+                  }
+                },
+                "bottom": {
+                  "position": "bottom",
+                  "attrs": {
+                    "circle": {
+                      "r": 4,
+                      "magnet": true,
+                      "stroke": "#5F95FF",
+                      "strokeWidth": 1,
+                      "fill": "#fff",
+                      "style": {
+                        "visibility": "hidden"
+                      }
+                    }
+                  }
+                },
+                "left": {
+                  "position": "left",
+                  "attrs": {
+                    "circle": {
+                      "r": 4,
+                      "magnet": true,
+                      "stroke": "#5F95FF",
+                      "strokeWidth": 1,
+                      "fill": "#fff",
+                      "style": {
+                        "visibility": "hidden"
+                      }
+                    }
+                  }
+                }
+              },
+              "items": [
+                {
+                  "group": "top",
+                  "id": "acdf5501-5be8-44f6-a587-8c5957040a60"
+                },
+                {
+                  "group": "right",
+                  "id": "32bd9d46-2dd7-4368-982f-4c740ab72af6"
+                },
+                {
+                  "group": "bottom",
+                  "id": "885c125c-db0a-4e3a-9ffc-1b12eacf6d0d"
+                },
+                {
+                  "group": "left",
+                  "id": "f4951cac-4ef0-4f92-ac0f-d679c8a834f0"
+                }
+              ]
+            },
+            "id": "b8f63324-de32-4467-ae28-02afe211d906",
+            "data": {
+              "type": "tm.Process",
+              "name": "Angular SPA",
+              "description": "",
+              "outOfScope": false,
+              "isTrustBoundary": false,
+              "reasonOutOfScope": "",
+              "hasOpenThreats": true,
+              "handlesCardPayment": false,
+              "handlesGoodsOrServices": false,
+              "isWebApplication": false,
+              "privilegeLevel": "",
+              "threats": [
+                {
+                  "id": "78d117b9-dcc4-4909-b019-db3788809fd2",
+                  "title": "XSS — Vol de token JWT",
+                  "status": "Open",
+                  "severity": "High",
+                  "type": "Spoofing",
+                  "description": "Un attaquant injecte du JavaScript malveillant\n              dans un champ de recherche ou commentaire.\n              Le script vole le token JWT stocké dans localStorage\n              et l'envoie à un serveur distant.",
+                  "mitigation": "Content Security Policy (CSP),\n              encoder les sorties HTML,\n              utiliser httpOnly cookies au lieu de localStorage",
+                  "modelType": "STRIDE",
+                  "new": false,
+                  "number": 1,
+                  "score": ""
+                },
+                {
+                  "id": "e6e299f5-1551-4fdd-961b-8f4a23de8dee",
+                  "title": "Manipulation des requêtes côté client",
+                  "status": "Open",
+                  "severity": "High",
+                  "type": "Tampering",
+                  "description": "L'utilisateur modifie les paramètres d'une requête\n              HTTP (prix, quantité, rôle) via les DevTools\n              avant qu'elle parte vers l'API.",
+                  "mitigation": "Toujours valider et vérifier côté serveur,\n              ne jamais faire confiance aux données du client",
+                  "modelType": "STRIDE",
+                  "new": false,
+                  "number": 2,
+                  "score": ""
+                },
+                {
+                  "id": "fd0ac3ba-0385-4d02-b42a-6401afc1921d",
+                  "title": "Token JWT exposé dans localStorage",
+                  "status": "Open",
+                  "severity": "Medium",
+                  "type": "Information disclosure",
+                  "description": "Le token d'authentification est stocké en clair\n              dans le localStorage du navigateur,\n              accessible par n'importe quel script JavaScript.",
+                  "mitigation": "Stocker le token dans un cookie httpOnly\n              inaccessible au JavaScript",
+                  "modelType": "STRIDE",
+                  "new": false,
+                  "number": 3,
+                  "score": ""
+                }
+              ],
+              "threatFrequency": {
+                "spoofing": 1,
+                "tampering": 1,
+                "repudiation": 0,
+                "informationDisclosure": 1,
+                "denialOfService": 0,
+                "elevationOfPrivilege": 0
+              }
+            }
+          },
+          {
+            "position": {
+              "x": 130,
+              "y": 360
+            },
+            "size": {
+              "width": 60,
+              "height": 60
+            },
+            "attrs": {
+              "text": {
+                "text": "Node.js / Express API"
+              },
+              "body": {
+                "stroke": "red",
+                "strokeWidth": 2.5,
+                "strokeDasharray": null
+              }
+            },
+            "visible": true,
+            "shape": "process",
+            "zIndex": 4,
+            "ports": {
+              "groups": {
+                "top": {
+                  "position": "top",
+                  "attrs": {
+                    "circle": {
+                      "r": 4,
+                      "magnet": true,
+                      "stroke": "#5F95FF",
+                      "strokeWidth": 1,
+                      "fill": "#fff",
+                      "style": {
+                        "visibility": "hidden"
+                      }
+                    }
+                  }
+                },
+                "right": {
+                  "position": "right",
+                  "attrs": {
+                    "circle": {
+                      "r": 4,
+                      "magnet": true,
+                      "stroke": "#5F95FF",
+                      "strokeWidth": 1,
+                      "fill": "#fff",
+                      "style": {
+                        "visibility": "hidden"
+                      }
+                    }
+                  }
+                },
+                "bottom": {
+                  "position": "bottom",
+                  "attrs": {
+                    "circle": {
+                      "r": 4,
+                      "magnet": true,
+                      "stroke": "#5F95FF",
+                      "strokeWidth": 1,
+                      "fill": "#fff",
+                      "style": {
+                        "visibility": "hidden"
+                      }
+                    }
+                  }
+                },
+                "left": {
+                  "position": "left",
+                  "attrs": {
+                    "circle": {
+                      "r": 4,
+                      "magnet": true,
+                      "stroke": "#5F95FF",
+                      "strokeWidth": 1,
+                      "fill": "#fff",
+                      "style": {
+                        "visibility": "hidden"
+                      }
+                    }
+                  }
+                }
+              },
+              "items": [
+                {
+                  "group": "top",
+                  "id": "acdf5501-5be8-44f6-a587-8c5957040a60"
+                },
+                {
+                  "group": "right",
+                  "id": "32bd9d46-2dd7-4368-982f-4c740ab72af6"
+                },
+                {
+                  "group": "bottom",
+                  "id": "885c125c-db0a-4e3a-9ffc-1b12eacf6d0d"
+                },
+                {
+                  "group": "left",
+                  "id": "f4951cac-4ef0-4f92-ac0f-d679c8a834f0"
+                }
+              ]
+            },
+            "id": "b98b117f-d635-495c-ab5e-44c3827b988f",
+            "data": {
+              "type": "tm.Process",
+              "name": "Node.js / Express API",
+              "description": "",
+              "outOfScope": false,
+              "isTrustBoundary": false,
+              "reasonOutOfScope": "",
+              "hasOpenThreats": true,
+              "handlesCardPayment": false,
+              "handlesGoodsOrServices": false,
+              "isWebApplication": false,
+              "privilegeLevel": "",
+              "threats": [
+                {
+                  "id": "fa5007df-3d17-4960-a717-883a556a19a4",
+                  "title": "SQL Injection sur le login",
+                  "status": "Open",
+                  "severity": "Critical",
+                  "type": "Spoofing",
+                  "description": "Le formulaire de login est vulnérable à l'injection SQL.\n              Payload : ' OR '1'='1' --\n              Permet de se connecter sans mot de passe\n              et d'accéder à n'importe quel compte.",
+                  "mitigation": "Utiliser des requêtes préparées (parameterized queries),\n              ne jamais concaténer des données utilisateur dans le SQL",
+                  "modelType": "STRIDE",
+                  "new": false,
+                  "number": 4,
+                  "score": ""
+                },
+                {
+                  "id": "c0b329cb-ffc3-4ef3-bfdc-0164bb990f15",
+                  "title": "Modification non autorisée des données",
+                  "status": "Open",
+                  "severity": "Critical",
+                  "type": "Tampering",
+                  "description": "L'API ne vérifie pas si l'utilisateur a le droit\n              de modifier une ressource (commande, profil d'un autre).\n              Un utilisateur peut modifier les données d'un autre.",
+                  "mitigation": "Vérifier l'ownership de chaque ressource,\n              implémenter une autorisation au niveau objet (BOLA)",
+                  "modelType": "STRIDE",
+                  "new": false,
+                  "number": 5,
+                  "score": ""
+                },
+                {
+                  "id": "bc685a57-03aa-4c50-9792-ed602b095caa",
+                  "title": "Absence de logs d'audit",
+                  "status": "Open",
+                  "severity": "Medium",
+                  "type": "Repudiation",
+                  "description": "Les actions sensibles (login, achat, modification)\n              ne sont pas loggées avec suffisamment de détails.\n              Un utilisateur malveillant peut nier ses actions.",
+                  "mitigation": "Logger toutes les actions avec timestamp,\n              IP, user ID, action effectuée",
+                  "modelType": "STRIDE",
+                  "new": false,
+                  "number": 6,
+                  "score": ""
+                },
+                {
+                  "id": "fb11e678-a22a-4662-97fe-0758ff1fd534",
+                  "title": "API expose des données sensibles",
+                  "status": "Open",
+                  "severity": "High",
+                  "type": "Information disclosure",
+                  "description": "Les réponses de l'API retournent des champs\n            sensibles non nécessaires (hash de mot de passe,\n              données internes, stack traces en cas d'erreur).",
+                  "mitigation": "Filtrer les réponses API,\n              ne retourner que les champs nécessaires,\n              désactiver les stack traces en production",
+                  "modelType": "STRIDE",
+                  "new": false,
+                  "number": 7,
+                  "score": ""
+                },
+                {
+                  "id": "dab6fd1a-3e8a-4f29-9990-48722a353573",
+                  "title": "Absence de rate limiting",
+                  "status": "Open",
+                  "severity": "High",
+                  "type": "Denial of service",
+                  "description": "L'API n'a pas de limite sur le nombre de requêtes.\n              Un attaquant peut envoyer des milliers de requêtes\n              pour saturer le serveur (brute force, DDoS).",
+                  "mitigation": "Implémenter un rate limiter (ex: express-rate-limit),\n              bloquer les IPs après X tentatives échouées",
+                  "modelType": "STRIDE",
+                  "new": false,
+                  "number": 8,
+                  "score": ""
+                },
+                {
+                  "id": "97fae53a-3584-47be-87cc-4b63a3e33953",
+                  "title": "Accès non autorisé à /api/admin",
+                  "status": "Open",
+                  "severity": "Critical",
+                  "type": "Elevation of privilege",
+                  "description": "Les routes d'administration ne vérifient pas\n              correctement le rôle de l'utilisateur.\n              Un utilisateur normal peut accéder aux fonctions admin.",
+                  "mitigation": "Vérifier le rôle côté serveur sur chaque route,\n              ne pas se fier au rôle envoyé par le client",
+                  "modelType": "STRIDE",
+                  "new": false,
+                  "number": 9,
+                  "score": ""
+                },
+                {
+                  "id": "41bd5a7a-db99-403a-a781-0ee5caa131ec",
+                  "title": "Point d'entrée d'injection NoSQL",
+                  "status": "Open",
+                  "severity": "High",
+                  "type": "Tampering",
+                  "description": "L'API construit des requêtes MarsDB avec des données client non validées (détail au store MarsDB). ",
+                  "mitigation": "Validation de type, sanitisation (ex. express-mongo-sanitize)",
+                  "modelType": "STRIDE",
+                  "new": false,
+                  "number": 42,
+                  "score": ""
+                }
+              ],
+              "threatFrequency": {
+                "spoofing": 1,
+                "tampering": 2,
+                "repudiation": 1,
+                "informationDisclosure": 1,
+                "denialOfService": 1,
+                "elevationOfPrivilege": 1
+              }
+            }
+          },
+          {
+            "position": {
+              "x": 43.75,
+              "y": 490
+            },
+            "size": {
+              "width": 120,
+              "height": 60
+            },
+            "attrs": {
+              "text": {
+                "text": "SQLite Database"
+              },
+              "topLine": {
+                "stroke": "red",
+                "strokeWidth": 2.5,
+                "strokeDasharray": null
+              },
+              "bottomLine": {
+                "stroke": "red",
+                "strokeWidth": 2.5,
+                "strokeDasharray": null
+              }
+            },
+            "visible": true,
+            "shape": "store",
+            "zIndex": 6,
+            "ports": {
+              "groups": {
+                "top": {
+                  "position": "top",
+                  "attrs": {
+                    "circle": {
+                      "r": 4,
+                      "magnet": true,
+                      "stroke": "#5F95FF",
+                      "strokeWidth": 1,
+                      "fill": "#fff",
+                      "style": {
+                        "visibility": "hidden"
+                      }
+                    }
+                  }
+                },
+                "right": {
+                  "position": "right",
+                  "attrs": {
+                    "circle": {
+                      "r": 4,
+                      "magnet": true,
+                      "stroke": "#5F95FF",
+                      "strokeWidth": 1,
+                      "fill": "#fff",
+                      "style": {
+                        "visibility": "hidden"
+                      }
+                    }
+                  }
+                },
+                "bottom": {
+                  "position": "bottom",
+                  "attrs": {
+                    "circle": {
+                      "r": 4,
+                      "magnet": true,
+                      "stroke": "#5F95FF",
+                      "strokeWidth": 1,
+                      "fill": "#fff",
+                      "style": {
+                        "visibility": "hidden"
+                      }
+                    }
+                  }
+                },
+                "left": {
+                  "position": "left",
+                  "attrs": {
+                    "circle": {
+                      "r": 4,
+                      "magnet": true,
+                      "stroke": "#5F95FF",
+                      "strokeWidth": 1,
+                      "fill": "#fff",
+                      "style": {
+                        "visibility": "hidden"
+                      }
+                    }
+                  }
+                }
+              },
+              "items": [
+                {
+                  "group": "top",
+                  "id": "86ca415a-8c3f-4cc4-a788-8f699e32a3ed"
+                },
+                {
+                  "group": "right",
+                  "id": "f81af89b-5fa6-456c-ba08-9b13f29e0990"
+                },
+                {
+                  "group": "bottom",
+                  "id": "eed592ab-d9e7-4fe3-9819-09d475a0c530"
+                },
+                {
+                  "group": "left",
+                  "id": "d2808065-2e6b-4a01-bb6e-7bf4739f544e"
+                }
+              ]
+            },
+            "id": "70e2f6a5-9801-46f7-b727-90b341033d68",
+            "data": {
+              "type": "tm.Store",
+              "name": "SQLite Database",
+              "description": "",
+              "outOfScope": false,
+              "isTrustBoundary": false,
+              "reasonOutOfScope": "",
+              "hasOpenThreats": true,
+              "isALog": false,
+              "isEncrypted": false,
+              "isSigned": false,
+              "storesCredentials": false,
+              "storesInventory": false,
+              "threats": [
+                {
+                  "id": "e967c6e2-bd39-408d-90e6-829e3ef4f408",
+                  "title": "Injection SQL directe",
+                  "status": "Open",
+                  "severity": "Critical",
+                  "type": "Tampering",
+                  "description": "Les requêtes SQL sont construites par concaténation\n              de chaînes. Un attaquant peut injecter du SQL\n              pour lire, modifier ou supprimer toutes les données.",
+                  "mitigation": "Requêtes préparées obligatoires,\n              principe du moindre privilège sur la DB",
+                  "modelType": "STRIDE",
+                  "new": false,
+                  "number": 10,
+                  "score": ""
+                },
+                {
+                  "id": "5289e9e7-d16b-4129-83d5-196166e6e732",
+                  "title": "Base de données non chiffrée",
+                  "status": "Open",
+                  "severity": "High",
+                  "type": "Information disclosure",
+                  "description": "Le fichier SQLite est stocké en clair sur le disque.\n              Si un attaquant accède au serveur,\n              toutes les données sont immédiatement lisibles.",
+                  "mitigation": "Chiffrer la base avec SQLCipher,\n              chiffrer le disque au niveau OS",
+                  "modelType": "STRIDE",
+                  "new": false,
+                  "number": 11,
+                  "score": ""
+                },
+                {
+                  "id": "aa2c08de-45f4-4eb7-bc56-a3baecbde279",
+                  "title": "Pas de sauvegarde / backup",
+                  "status": "Open",
+                  "severity": "Medium",
+                  "type": "Denial of service",
+                  "description": "Aucune stratégie de backup n'est définie.\n              Une suppression accidentelle ou malveillante\n              des données serait irréversible.",
+                  "mitigation": "Sauvegardes automatiques régulières,\n              politique de rétention des données",
+                  "modelType": "STRIDE",
+                  "new": false,
+                  "number": 12,
+                  "score": ""
+                },
+                {
+                  "id": "f2e4d9df-5c78-4e0d-aad1-1f3f3e6920d6",
+                  "title": "Absence de traçabilité des modifications",
+                  "status": "Open",
+                  "severity": "Low",
+                  "type": "Repudiation",
+                  "description": "Modifications non journalisées. ",
+                  "mitigation": "Journalisation",
+                  "modelType": "STRIDE",
+                  "new": false,
+                  "number": 44,
+                  "score": ""
+                }
+              ],
+              "threatFrequency": {
+                "tampering": 1,
+                "repudiation": 1,
+                "informationDisclosure": 1,
+                "denialOfService": 1
+              }
+            }
+          },
+          {
+            "position": {
+              "x": 260,
+              "y": 490
+            },
+            "size": {
+              "width": 120,
+              "height": 60
+            },
+            "attrs": {
+              "text": {
+                "text": "Content Folder / File System"
+              },
+              "topLine": {
+                "stroke": "red",
+                "strokeWidth": 2.5,
+                "strokeDasharray": null
+              },
+              "bottomLine": {
+                "stroke": "red",
+                "strokeWidth": 2.5,
+                "strokeDasharray": null
+              }
+            },
+            "visible": true,
+            "shape": "store",
+            "zIndex": 7,
+            "ports": {
+              "groups": {
+                "top": {
+                  "position": "top",
+                  "attrs": {
+                    "circle": {
+                      "r": 4,
+                      "magnet": true,
+                      "stroke": "#5F95FF",
+                      "strokeWidth": 1,
+                      "fill": "#fff",
+                      "style": {
+                        "visibility": "hidden"
+                      }
+                    }
+                  }
+                },
+                "right": {
+                  "position": "right",
+                  "attrs": {
+                    "circle": {
+                      "r": 4,
+                      "magnet": true,
+                      "stroke": "#5F95FF",
+                      "strokeWidth": 1,
+                      "fill": "#fff",
+                      "style": {
+                        "visibility": "hidden"
+                      }
+                    }
+                  }
+                },
+                "bottom": {
+                  "position": "bottom",
+                  "attrs": {
+                    "circle": {
+                      "r": 4,
+                      "magnet": true,
+                      "stroke": "#5F95FF",
+                      "strokeWidth": 1,
+                      "fill": "#fff",
+                      "style": {
+                        "visibility": "hidden"
+                      }
+                    }
+                  }
+                },
+                "left": {
+                  "position": "left",
+                  "attrs": {
+                    "circle": {
+                      "r": 4,
+                      "magnet": true,
+                      "stroke": "#5F95FF",
+                      "strokeWidth": 1,
+                      "fill": "#fff",
+                      "style": {
+                        "visibility": "hidden"
+                      }
+                    }
+                  }
+                }
+              },
+              "items": [
+                {
+                  "group": "top",
+                  "id": "86ca415a-8c3f-4cc4-a788-8f699e32a3ed"
+                },
+                {
+                  "group": "right",
+                  "id": "f81af89b-5fa6-456c-ba08-9b13f29e0990"
+                },
+                {
+                  "group": "bottom",
+                  "id": "eed592ab-d9e7-4fe3-9819-09d475a0c530"
+                },
+                {
+                  "group": "left",
+                  "id": "d2808065-2e6b-4a01-bb6e-7bf4739f544e"
+                }
+              ]
+            },
+            "id": "193097e1-6e5d-4073-983b-0c930e8d7048",
+            "data": {
+              "type": "tm.Store",
+              "name": "Content Folder / File System",
+              "description": "",
+              "outOfScope": false,
+              "isTrustBoundary": false,
+              "reasonOutOfScope": "",
+              "hasOpenThreats": true,
+              "isALog": false,
+              "isEncrypted": false,
+              "isSigned": false,
+              "storesCredentials": false,
+              "storesInventory": false,
+              "threats": [
+                {
+                  "id": "5f483a95-789d-4613-9dd0-647b3d262fe5",
+                  "title": "Upload de fichier malveillant",
+                  "status": "Open",
+                  "severity": "High",
+                  "type": "Tampering",
+                  "description": "L'application accepte des uploads de fichiers\n              sans vérifier correctement le type réel du fichier.\n              Un attaquant peut uploader un fichier .js ou .php\n              déguisé en image.\n",
+                  "mitigation": "Vérifier le MIME type réel (pas juste l'extension),\n              scanner les fichiers uploadés,\n              stocker hors du webroot",
+                  "modelType": "STRIDE",
+                  "new": false,
+                  "number": 16,
+                  "score": ""
+                },
+                {
+                  "id": "c5c3ee91-428c-4625-bcc1-a63dd70d0598",
+                  "title": "Path Traversal",
+                  "status": "Open",
+                  "severity": "High",
+                  "type": "Information disclosure",
+                  "description": "Le nom de fichier fourni par l'utilisateur\n              n'est pas sanitisé. Un attaquant peut utiliser\n              \"../../../etc/passwd\" pour lire des fichiers système.\n",
+                  "mitigation": " Sanitiser les noms de fichiers,\n              utiliser des noms générés aléatoirement,\n              jamais utiliser le nom fourni par l'utilisateur",
+                  "modelType": "STRIDE",
+                  "new": false,
+                  "number": 17,
+                  "score": ""
+                },
+                {
+                  "id": "3f2f2470-4672-4a35-92bf-5138d763e75b",
+                  "title": " Accès direct aux fichiers uploadés",
+                  "status": "Open",
+                  "severity": "Medium",
+                  "type": "Elevation of privilege",
+                  "description": "Les fichiers uploadés sont accessibles directement\n              via URL sans vérification d'authentification.\n              N'importe qui peut accéder aux fichiers privés.\n",
+                  "mitigation": " Servir les fichiers via l'API avec vérification\n              d'authentification, pas directement depuis le disque",
+                  "modelType": "STRIDE",
+                  "new": false,
+                  "number": 18,
+                  "score": ""
+                },
+                {
+                  "id": "5d5e0e89-628a-46a0-8274-ab5e435d98bc",
+                  "title": "Écriture de fichiers arbitraires",
+                  "status": "Open",
+                  "severity": "High",
+                  "type": "Tampering",
+                  "description": "Écriture avec un nom fourni par l'utilisateur -> écrasement/écriture de code. ",
+                  "mitigation": "Noms aléatoires, permissions restreintes sur uploads.",
+                  "modelType": "STRIDE",
+                  "new": false,
+                  "number": 43,
+                  "score": ""
+                }
+              ],
+              "threatFrequency": {
+                "tampering": 2,
+                "repudiation": 0,
+                "informationDisclosure": 1,
+                "denialOfService": 0
+              }
+            }
+          },
+          {
+            "shape": "trust-boundary-curve",
+            "width": 200,
+            "height": 100,
+            "zIndex": 10,
+            "connector": "smooth",
+            "data": {
+              "type": "tm.Boundary",
+              "name": "Trust Boundary",
+              "description": "",
+              "isTrustBoundary": true,
+              "hasOpenThreats": false,
+              "crossingFlows": [],
+              "containedElements": []
+            },
+            "labels": [
+              "Trust Boundary"
+            ],
+            "id": "dcc99f4a-e6f9-4ee0-9697-52ecdab39081",
+            "source": {
+              "x": 10,
+              "y": 190
+            },
+            "target": {
+              "x": 920,
+              "y": 190
+            }
+          },
+          {
+            "shape": "flow",
+            "attrs": {
+              "line": {
+                "stroke": "red",
+                "strokeWidth": 2.5,
+                "targetMarker": {
+                  "name": "block"
+                },
+                "sourceMarker": {
+                  "name": ""
+                },
+                "strokeDasharray": null
+              }
+            },
+            "width": 200,
+            "height": 100,
+            "zIndex": 10,
+            "connector": "smooth",
+            "data": {
+              "type": "tm.Flow",
+              "name": "HTTP Request",
+              "description": "",
+              "outOfScope": false,
+              "isTrustBoundary": false,
+              "reasonOutOfScope": "",
+              "hasOpenThreats": true,
+              "isBidirectional": false,
+              "isEncrypted": false,
+              "isPublicNetwork": false,
+              "protocol": "",
+              "threats": [
+                {
+                  "id": "16bcb041-f0b9-4ac5-93c7-7fedfa73a251",
+                  "title": "Interception des données en transit (Man-in-the-Middle)",
+                  "status": "Open",
+                  "severity": "High",
+                  "type": "Information disclosure",
+                  "description": "Si la communication se fait en HTTP (pas HTTPS),\n              un attaquant sur le même réseau peut intercepter\n              tout le trafic — mots de passe, tokens, données.",
+                  "mitigation": "Forcer HTTPS partout, ajouter le header HSTS",
+                  "modelType": "STRIDE",
+                  "new": false,
+                  "number": 20,
+                  "score": ""
+                },
+                {
+                  "id": "02b11e87-72f4-4bab-b08d-7bbedd137802",
+                  "title": "Falsification des requêtes HTTP",
+                  "status": "Open",
+                  "severity": "Medium",
+                  "type": "Tampering",
+                  "description": "Un attaquant peut intercepter et modifier\n              les requêtes HTTP entre le navigateur et le serveur\n              (si pas de HTTPS).\n",
+                  "mitigation": "HTTPS obligatoire, validation côté serveur",
+                  "modelType": "STRIDE",
+                  "new": false,
+                  "number": 22,
+                  "score": ""
+                }
+              ],
+              "trustBoundaryIds": [],
+              "threatFrequency": {
+                "tampering": 1,
+                "informationDisclosure": 1,
+                "denialOfService": 0
+              }
+            },
+            "labels": [
+              "HTTP Request"
+            ],
+            "id": "5b049188-fc82-4e78-9fc3-5369e8d1e577",
+            "source": {
+              "cell": "396f8ba9-fdcd-4037-aab3-717b2e04fc42",
+              "port": "8ad9877c-615c-4d47-9bfa-60525a4791e1"
+            },
+            "target": {
+              "cell": "b8f63324-de32-4467-ae28-02afe211d906",
+              "port": "f4951cac-4ef0-4f92-ac0f-d679c8a834f0"
+            },
+            "vertices": [
+              {
+                "x": 140,
+                "y": 150
+              },
+              {
+                "x": 200,
+                "y": 200
+              }
+            ]
+          },
+          {
+            "shape": "flow",
+            "attrs": {
+              "line": {
+                "stroke": "red",
+                "strokeWidth": 2.5,
+                "targetMarker": {
+                  "name": "block"
+                },
+                "sourceMarker": {
+                  "name": ""
+                },
+                "strokeDasharray": null
+              }
+            },
+            "width": 200,
+            "height": 100,
+            "zIndex": 10,
+            "connector": "smooth",
+            "data": {
+              "type": "tm.Flow",
+              "name": "SQL Query via Sequelize",
+              "description": "",
+              "outOfScope": false,
+              "isTrustBoundary": false,
+              "reasonOutOfScope": "",
+              "hasOpenThreats": true,
+              "isBidirectional": false,
+              "isEncrypted": false,
+              "isPublicNetwork": false,
+              "protocol": "",
+              "threats": [
+                {
+                  "id": "f25d72fe-1ae8-4a97-9090-07b30a332f5e",
+                  "title": "Injection SQL via Sequelize mal utilisé",
+                  "status": "Open",
+                  "severity": "Critical",
+                  "type": "Tampering",
+                  "description": "Si Sequelize est utilisé avec des requêtes raw()\n              sans paramètres préparés, des injections SQL\n              sont possibles même avec un ORM.\n",
+                  "mitigation": "Utiliser uniquement les méthodes Sequelize\n              avec paramètres (findOne, where: {}),\n              éviter sequelize.query() avec concaténation",
+                  "modelType": "STRIDE",
+                  "new": false,
+                  "number": 27,
+                  "score": ""
+                }
+              ],
+              "trustBoundaryIds": [],
+              "threatFrequency": {
+                "tampering": 1,
+                "informationDisclosure": 0,
+                "denialOfService": 0
+              }
+            },
+            "labels": [
+              "SQL Query via Sequelize"
+            ],
+            "id": "7c18dc0c-acee-4d68-879a-325af63c909c",
+            "source": {
+              "cell": "b98b117f-d635-495c-ab5e-44c3827b988f",
+              "port": "885c125c-db0a-4e3a-9ffc-1b12eacf6d0d"
+            },
+            "target": {
+              "cell": "70e2f6a5-9801-46f7-b727-90b341033d68",
+              "port": "86ca415a-8c3f-4cc4-a788-8f699e32a3ed"
+            }
+          },
+          {
+            "shape": "flow",
+            "attrs": {
+              "line": {
+                "stroke": "red",
+                "strokeWidth": 2.5,
+                "targetMarker": {
+                  "name": "block"
+                },
+                "sourceMarker": {
+                  "name": ""
+                },
+                "strokeDasharray": null
+              }
+            },
+            "width": 200,
+            "height": 100,
+            "zIndex": 10,
+            "connector": "smooth",
+            "data": {
+              "type": "tm.Flow",
+              "name": "File Read/Write",
+              "description": "",
+              "outOfScope": false,
+              "isTrustBoundary": false,
+              "reasonOutOfScope": "",
+              "hasOpenThreats": true,
+              "isBidirectional": false,
+              "isEncrypted": false,
+              "isPublicNetwork": false,
+              "protocol": "",
+              "threats": [
+                {
+                  "id": "eb20cd7f-1aa8-4568-bc1b-60da6576283e",
+                  "title": "Écriture de fichiers arbitraires",
+                  "status": "Open",
+                  "severity": "High",
+                  "type": "Tampering",
+                  "description": "L'API écrit des fichiers sur le système\n              en utilisant des noms fournis par l'utilisateur.\n              Un attaquant peut écraser des fichiers système\n              ou écrire du code exécutable.\n",
+                  "mitigation": " Générer des noms de fichiers aléatoires,\n              restreindre les permissions du dossier uploads",
+                  "modelType": "STRIDE",
+                  "new": false,
+                  "number": 29,
+                  "score": ""
+                },
+                {
+                  "id": "76eed8b0-a44c-49a7-a5aa-a55348001cae",
+                  "title": "Path Traversal via nom de fichier",
+                  "status": "Open",
+                  "severity": "High",
+                  "type": "Information disclosure",
+                  "description": "Le nom de fichier ../../../etc/passwd\n              peut permettre de lire des fichiers en dehors\n              du dossier autorisé.\n",
+                  "mitigation": " Sanitiser le nom de fichier,\n              utiliser path.basename() pour extraire\n              seulement le nom, jamais le chemin complet",
+                  "modelType": "STRIDE",
+                  "new": false,
+                  "number": 30,
+                  "score": ""
+                }
+              ],
+              "trustBoundaryIds": [],
+              "threatFrequency": {
+                "tampering": 1,
+                "informationDisclosure": 1,
+                "denialOfService": 0
+              }
+            },
+            "labels": [
+              "File Read/Write"
+            ],
+            "id": "1dd12b51-b846-45c3-a205-1397c5eec36f",
+            "source": {
+              "cell": "b98b117f-d635-495c-ab5e-44c3827b988f",
+              "port": "32bd9d46-2dd7-4368-982f-4c740ab72af6"
+            },
+            "target": {
+              "cell": "193097e1-6e5d-4073-983b-0c930e8d7048",
+              "port": "86ca415a-8c3f-4cc4-a788-8f699e32a3ed"
+            },
+            "vertices": []
+          },
+          {
+            "shape": "trust-boundary-curve",
+            "width": 200,
+            "height": 100,
+            "zIndex": 10,
+            "connector": "smooth",
+            "data": {
+              "type": "tm.Boundary",
+              "name": "Trust Boundary",
+              "description": "",
+              "isTrustBoundary": true,
+              "hasOpenThreats": false,
+              "crossingFlows": [],
+              "containedElements": []
+            },
+            "labels": [
+              "Trust Boundary"
+            ],
+            "id": "db9cec46-280e-43ed-b629-c4ad6f68ca50",
+            "source": {
+              "x": 20,
+              "y": 300
+            },
+            "target": {
+              "x": 900,
+              "y": 300
+            }
+          },
+          {
+            "shape": "flow",
+            "attrs": {
+              "line": {
+                "stroke": "red",
+                "strokeWidth": 2.5,
+                "targetMarker": {
+                  "name": "block"
+                },
+                "sourceMarker": {
+                  "name": ""
+                },
+                "strokeDasharray": null
+              }
+            },
+            "width": 200,
+            "height": 100,
+            "zIndex": 10,
+            "connector": "smooth",
+            "data": {
+              "type": "tm.Flow",
+              "name": "No SQL\n",
+              "description": "",
+              "outOfScope": false,
+              "isTrustBoundary": false,
+              "reasonOutOfScope": "",
+              "hasOpenThreats": true,
+              "isBidirectional": false,
+              "isEncrypted": false,
+              "isPublicNetwork": false,
+              "protocol": "",
+              "threats": [
+                {
+                  "id": "3ab34c7e-70da-40a9-865c-02c4c55caf14",
+                  "title": "Requête NoSQL construite avec des données non validées",
+                  "status": "Open",
+                  "severity": "Critical",
+                  "type": "Tampering",
+                  "description": "L'API construit les requêtes MarsDB directement\n              avec les données reçues du client sans validation.\n              \n              Code dangereux :\n              db.find({ email: req.body.email })\n              \n              Si req.body.email = {\"$gt\": \"\"}\n              → la requête devient : db.find({ email: {\"$gt\": \"\"} })\n              → retourne TOUS les utilisateurs\n              \n",
+                  "mitigation": " Valider que req.body.email est bien une string,\n              utiliser des schémas de validation (Joi, Yup),\n              rejeter toute valeur qui n'est pas du bon type",
+                  "modelType": "STRIDE",
+                  "new": false,
+                  "number": 39,
+                  "score": ""
+                },
+                {
+                  "id": "f8d995c7-84f1-4500-b4ed-6418c8fde453",
+                  "title": "New STRIDE threat",
+                  "status": "Open",
+                  "severity": "TBD",
+                  "type": "Information disclosure",
+                  "description": "Provide a description for this threat",
+                  "mitigation": "Provide remediation for this threat or a reason if status is N/A",
+                  "modelType": "STRIDE",
+                  "new": true,
+                  "number": 40,
+                  "score": ""
+                }
+              ],
+              "trustBoundaryIds": [],
+              "threatFrequency": {
+                "tampering": 1,
+                "informationDisclosure": 0,
+                "denialOfService": 0
+              }
+            },
+            "labels": [
+              "No SQL\n"
+            ],
+            "id": "1f3362ca-8c75-47e1-81be-768e58857483",
+            "source": {
+              "cell": "b98b117f-d635-495c-ab5e-44c3827b988f",
+              "port": "32bd9d46-2dd7-4368-982f-4c740ab72af6"
+            },
+            "target": {
+              "cell": "61fc9dbe-fc62-49bb-b39a-0e30ba66423e",
+              "port": "f233d141-617a-4a8a-8440-23164ce7aa35"
+            },
+            "vertices": [
+              {
+                "x": 280,
+                "y": 410
+              },
+              {
+                "x": 410,
+                "y": 450
+              }
+            ]
+          },
+          {
+            "shape": "flow",
+            "attrs": {
+              "line": {
+                "stroke": "red",
+                "strokeWidth": 2.5,
+                "targetMarker": {
+                  "name": "block"
+                },
+                "sourceMarker": {
+                  "name": "block"
+                },
+                "strokeDasharray": null
+              }
+            },
+            "width": 200,
+            "height": 100,
+            "zIndex": 10,
+            "connector": "smooth",
+            "data": {
+              "type": "tm.Flow",
+              "name": "OAuth 2.0 Login",
+              "description": "",
+              "outOfScope": false,
+              "isTrustBoundary": false,
+              "reasonOutOfScope": "",
+              "hasOpenThreats": true,
+              "isBidirectional": true,
+              "isEncrypted": false,
+              "isPublicNetwork": false,
+              "protocol": "",
+              "threats": [
+                {
+                  "id": "9d2b4bfc-25a0-4d34-89a2-76d9e8214158",
+                  "title": "Vol du code d'autorisation OAuth",
+                  "status": "Open",
+                  "severity": "Medium",
+                  "type": "Information disclosure",
+                  "description": "Le code d'autorisation OAuth peut être\n              intercepté dans les logs ou l'historique\n              du navigateur si mal géré.\n",
+                  "mitigation": " Utiliser PKCE (Proof Key for Code Exchange),\n              code d'autorisation à usage unique",
+                  "modelType": "STRIDE",
+                  "new": false,
+                  "number": 31,
+                  "score": ""
+                }
+              ],
+              "trustBoundaryIds": [],
+              "threatFrequency": {
+                "tampering": 0,
+                "informationDisclosure": 1,
+                "denialOfService": 0
+              }
+            },
+            "labels": [
+              "OAuth 2.0 Login"
+            ],
+            "id": "a565fea8-b4d8-4a99-b6db-1fb3714addae",
+            "source": {
+              "cell": "a1af8be4-3f12-4866-9dc5-ee9f78e87f07",
+              "port": "8ad9877c-615c-4d47-9bfa-60525a4791e1"
+            },
+            "target": {
+              "cell": "b8f63324-de32-4467-ae28-02afe211d906",
+              "port": "32bd9d46-2dd7-4368-982f-4c740ab72af6"
+            },
+            "vertices": []
+          },
+          {
+            "shape": "flow",
+            "attrs": {
+              "line": {
+                "stroke": "red",
+                "strokeWidth": 2.5,
+                "targetMarker": {
+                  "name": "block"
+                },
+                "sourceMarker": {
+                  "name": "block"
+                },
+                "strokeDasharray": null
+              }
+            },
+            "width": 200,
+            "height": 100,
+            "zIndex": 10,
+            "connector": "smooth",
+            "data": {
+              "type": "tm.Flow",
+              "name": "socket.io (WebSocket)",
+              "description": "",
+              "outOfScope": false,
+              "isTrustBoundary": false,
+              "reasonOutOfScope": "",
+              "hasOpenThreats": true,
+              "isBidirectional": true,
+              "isEncrypted": false,
+              "isPublicNetwork": false,
+              "protocol": "",
+              "threats": [
+                {
+                  "id": "c52cfda9-6e35-44ef-b6f4-00b1691cdb14",
+                  "title": "Données sensibles poussées via WebSocket",
+                  "status": "Open",
+                  "severity": "Medium",
+                  "type": "Information disclosure",
+                  "description": "Les événements socket.io peuvent exposer\n              des données sensibles à tous les clients connectés\n              si le broadcast n'est pas bien ciblé.\n",
+                  "mitigation": " Toujours cibler les événements socket.io\n              à l'utilisateur concerné, pas en broadcast global",
+                  "modelType": "STRIDE",
+                  "new": false,
+                  "number": 26,
+                  "score": ""
+                }
+              ],
+              "trustBoundaryIds": [],
+              "threatFrequency": {
+                "tampering": 0,
+                "informationDisclosure": 1,
+                "denialOfService": 0
+              }
+            },
+            "labels": [
+              "socket.io (WebSocket)"
+            ],
+            "id": "a5c440dc-ce09-4547-8653-f888642615a3",
+            "source": {
+              "cell": "b98b117f-d635-495c-ab5e-44c3827b988f",
+              "port": "acdf5501-5be8-44f6-a587-8c5957040a60"
+            },
+            "target": {
+              "cell": "b8f63324-de32-4467-ae28-02afe211d906",
+              "port": "f4951cac-4ef0-4f92-ac0f-d679c8a834f0"
+            },
+            "vertices": [
+              {
+                "x": 200,
+                "y": 280
+              }
+            ]
+          },
+          {
+            "shape": "flow",
+            "attrs": {
+              "line": {
+                "stroke": "red",
+                "strokeWidth": 2.5,
+                "targetMarker": {
+                  "name": "block"
+                },
+                "sourceMarker": {
+                  "name": ""
+                },
+                "strokeDasharray": null
+              }
+            },
+            "width": 200,
+            "height": 100,
+            "zIndex": 10,
+            "connector": "smooth",
+            "data": {
+              "type": "tm.Flow",
+              "name": "Service API (REST)",
+              "description": "",
+              "outOfScope": false,
+              "isTrustBoundary": false,
+              "reasonOutOfScope": "",
+              "hasOpenThreats": true,
+              "isBidirectional": false,
+              "isEncrypted": false,
+              "isPublicNetwork": false,
+              "protocol": "",
+              "threats": [
+                {
+                  "id": "8466b98e-4cf6-41be-b42c-b7e6add615e0",
+                  "title": "Injection de données malveillantes via l'API",
+                  "status": "Open",
+                  "severity": "Critical",
+                  "type": "Tampering",
+                  "description": "L'API reçoit des données sans les valider.\n              Un attaquant envoie des payloads malveillants\n              (SQL injection, XSS) directement via les requêtes API.\n",
+                  "mitigation": "Valider et sanitiser toutes les entrées côté serveur",
+                  "modelType": "STRIDE",
+                  "new": false,
+                  "number": 25,
+                  "score": ""
+                },
+                {
+                  "id": "80c19cc0-75c8-4119-b9aa-9c1194ae6428",
+                  "title": "Altération en transit",
+                  "status": "Open",
+                  "severity": "Medium",
+                  "type": "Tampering",
+                  "description": "Modification des requêtes entre navigateur et serveur si pas de HTTPS. ",
+                  "mitigation": "HTTPS + contrôle d'intégrité  , validation côté serveur.",
+                  "modelType": "STRIDE",
+                  "new": false,
+                  "number": 45,
+                  "score": ""
+                },
+                {
+                  "id": "bdc1d61d-f953-409c-b9d1-46aa561035fa",
+                  "title": "Interception en transit (MITM)",
+                  "status": "Open",
+                  "severity": "High",
+                  "type": "Information disclosure",
+                  "description": "En HTTP (pas HTTPS), un attaquant sur le réseau intercepte mots de passe, tokens, données. ",
+                  "mitigation": "HTTPS partout",
+                  "modelType": "STRIDE",
+                  "new": false,
+                  "number": 46,
+                  "score": ""
+                },
+                {
+                  "id": "eb47fe3f-0aa8-45b4-a5ec-459cf96a4eec",
+                  "title": "Déni de service sur le canal exposé",
+                  "status": "Open",
+                  "severity": "Medium",
+                  "type": "Denial of service",
+                  "description": "Saturation du flux (REST). ",
+                  "mitigation": "Rate limiting, timeouts.",
+                  "modelType": "STRIDE",
+                  "new": false,
+                  "number": 47,
+                  "score": ""
+                }
+              ],
+              "trustBoundaryIds": [],
+              "threatFrequency": {
+                "tampering": 3,
+                "informationDisclosure": 1,
+                "denialOfService": 1
+              }
+            },
+            "labels": [
+              "Service API (REST)"
+            ],
+            "id": "3225f1da-b5be-4fc7-a830-4668375e134b",
+            "source": {
+              "cell": "b8f63324-de32-4467-ae28-02afe211d906",
+              "port": "885c125c-db0a-4e3a-9ffc-1b12eacf6d0d"
+            },
+            "target": {
+              "cell": "b98b117f-d635-495c-ab5e-44c3827b988f",
+              "port": "32bd9d46-2dd7-4368-982f-4c740ab72af6"
+            },
+            "tools": {
+              "items": [
+                "boundary",
+                "button-remove",
+                "vertices",
+                "source-arrowhead",
+                "target-arrowhead"
+              ],
+              "name": null
+            },
+            "vertices": [
+              {
+                "x": 230,
+                "y": 280
+              },
+              {
+                "x": 210,
+                "y": 350
+              }
+            ]
+          },
+          {
+            "position": {
+              "x": 470,
+              "y": 490
+            },
+            "size": {
+              "width": 120,
+              "height": 60
+            },
+            "attrs": {
+              "text": {
+                "text": "Mras DB\n"
+              },
+              "topLine": {
+                "stroke": "red",
+                "strokeWidth": 2.5,
+                "strokeDasharray": null
+              },
+              "bottomLine": {
+                "stroke": "red",
+                "strokeWidth": 2.5,
+                "strokeDasharray": null
+              }
+            },
+            "visible": true,
+            "shape": "store",
+            "zIndex": 11,
+            "ports": {
+              "groups": {
+                "top": {
+                  "position": "top",
+                  "attrs": {
+                    "circle": {
+                      "r": 4,
+                      "magnet": true,
+                      "stroke": "#5F95FF",
+                      "strokeWidth": 1,
+                      "fill": "#fff",
+                      "style": {
+                        "visibility": "hidden"
+                      }
+                    }
+                  }
+                },
+                "right": {
+                  "position": "right",
+                  "attrs": {
+                    "circle": {
+                      "r": 4,
+                      "magnet": true,
+                      "stroke": "#5F95FF",
+                      "strokeWidth": 1,
+                      "fill": "#fff",
+                      "style": {
+                        "visibility": "hidden"
+                      }
+                    }
+                  }
+                },
+                "bottom": {
+                  "position": "bottom",
+                  "attrs": {
+                    "circle": {
+                      "r": 4,
+                      "magnet": true,
+                      "stroke": "#5F95FF",
+                      "strokeWidth": 1,
+                      "fill": "#fff",
+                      "style": {
+                        "visibility": "hidden"
+                      }
+                    }
+                  }
+                },
+                "left": {
+                  "position": "left",
+                  "attrs": {
+                    "circle": {
+                      "r": 4,
+                      "magnet": true,
+                      "stroke": "#5F95FF",
+                      "strokeWidth": 1,
+                      "fill": "#fff",
+                      "style": {
+                        "visibility": "hidden"
+                      }
+                    }
+                  }
+                }
+              },
+              "items": [
+                {
+                  "group": "top",
+                  "id": "f233d141-617a-4a8a-8440-23164ce7aa35"
+                },
+                {
+                  "group": "right",
+                  "id": "9b4a2bd6-e17c-4f92-8108-72da1c15f622"
+                },
+                {
+                  "group": "bottom",
+                  "id": "f494288b-5802-4830-b5d4-2512cf11a34b"
+                },
+                {
+                  "group": "left",
+                  "id": "8c42c569-c5bf-4993-9131-c5efa3e69015"
+                }
+              ]
+            },
+            "id": "61fc9dbe-fc62-49bb-b39a-0e30ba66423e",
+            "data": {
+              "type": "tm.Store",
+              "name": "Mras DB\n",
+              "description": "Base de données NoSQL — Sessions, Challenges, Panier",
+              "outOfScope": false,
+              "isTrustBoundary": false,
+              "reasonOutOfScope": "",
+              "hasOpenThreats": true,
+              "isALog": false,
+              "isEncrypted": false,
+              "isSigned": false,
+              "storesCredentials": false,
+              "storesInventory": false,
+              "threats": [
+                {
+                  "id": "8516eae9-7938-4420-83ea-9077de41f27c",
+                  "title": " Injection NoSQL — Manipulation des requêtes",
+                  "status": "Open",
+                  "severity": "Critical",
+                  "type": "Tampering",
+                  "description": "Contrairement au SQL, l'injection NoSQL utilise\n              des objets JavaScript malveillants.\n              \n              Exemple d'attaque sur un login :\n              Au lieu de envoyer :\n                { \"email\": \"user@test.com\", \"password\": \"1234\" }\n              \n              L'attaquant envoie :\n                { \"email\": {\"$gt\": \"\"}, \"password\": {\"$gt\": \"\"} }\n              \n              MarsDB interprète {\"$gt\": \"\"} comme\n              \"plus grand que vide\" → toujours vrai\n              → accès sans mot de passe !\n              \n",
+                  "mitigation": "Valider le type des entrées (string obligatoire),\n              rejeter les objets JSON dans les champs\n              qui attendent une string,\n              utiliser un schéma de validation strict",
+                  "modelType": "STRIDE",
+                  "new": false,
+                  "number": 36,
+                  "score": ""
+                },
+                {
+                  "id": "ef55d5b4-a1ff-43fa-a9d9-8eba927be09e",
+                  "title": "Accès non autorisé aux données de session",
+                  "status": "Open",
+                  "severity": "High",
+                  "type": "Information disclosure",
+                  "description": "MarsDB stocke les sessions utilisateurs.\n              Si un attaquant accède à la base MarsDB,\n              il peut voler toutes les sessions actives\n              et se connecter en tant que n'importe quel\n              utilisateur sans connaître leur mot de passe.\n              \n",
+                  "mitigation": "Chiffrer les données de session,\n              stocker uniquement l'ID de session (pas les données),\n              expiration automatique des sessions",
+                  "modelType": "STRIDE",
+                  "new": false,
+                  "number": 37,
+                  "score": ""
+                },
+                {
+                  "id": "dd606014-1532-4e80-bb6b-0d406f6cfd25",
+                  "title": "Déni de service — Saturation de MarsDB",
+                  "status": "Open",
+                  "severity": "Medium",
+                  "type": "Denial of service",
+                  "description": "MarsDB est une base légère sans mécanisme\n              de protection contre les requêtes abusives.\n              Un attaquant peut envoyer des milliers de requêtes\n              simultanées pour saturer MarsDB et rendre\n              l'application inaccessible.\n              \n",
+                  "mitigation": " Rate limiting sur les routes qui utilisent MarsDB,\n              timeout sur les requêtes NoSQL,\n              surveillance des performances",
+                  "modelType": "STRIDE",
+                  "new": false,
+                  "number": 38,
+                  "score": ""
+                }
+              ],
+              "threatFrequency": {
+                "tampering": 1,
+                "repudiation": 0,
+                "informationDisclosure": 1,
+                "denialOfService": 1
+              }
+            }
+          }
+        ],
+        "description": "High-level architecture of the OWASP Juice Shop application."
+      }
+    ],
+    "diagramTop": 1,
+    "reviewer": "Project Supervisor",
+    "threatTop": 47
+  }
+}
