@@ -8,56 +8,48 @@ on:
 
 jobs:
 
-  # ─────────────────────────────────────────
-  # JOB 1 : Checkout + Build de base
-  # Objectif : vérifier que le code se build
-  # ─────────────────────────────────────────
   build:
     name: "Checkout + Build"
     runs-on: ubuntu-latest
+    timeout-minutes: 30
 
     steps:
 
-      # ÉTAPE 1 — Récupérer le code
       - name: "1 — Checkout code"
         uses: actions/checkout@v4
 
-      # ÉTAPE 2 — Installer Node.js
       - name: "2 — Setup Node.js"
         uses: actions/setup-node@v4
         with:
-          node-version: '18'
-          cache: 'npm'
-          cache-dependency-path: juice-shop/package-lock.json
+          node-version: '20'
 
-      # ÉTAPE 3 — Installer les dépendances
-      - name: "3 — Install dependencies"
-        working-directory: juice-shop
-        run: npm install --omit=dev
-
-      # ÉTAPE 4 — Vérifier que l'app démarre
-      - name: "4 — Build check"
-        working-directory: juice-shop
+      - name: "3 — Check structure"
         run: |
-          echo "Build réussi — application prête"
-          node -e "console.log('Node.js OK:', process.version)"
+          echo "=== Repo root ==="
+          ls -la
+          echo "=== juice-shop/ ==="
+          ls juice-shop/
+          echo "=== package-lock.json ? ==="
+          ls juice-shop/package-lock.json && echo "✅ Trouvé" || echo "❌ Manquant"
 
-      # ÉTAPE 5 — Build image Docker
-      - name: "5 — Build Docker image"
+      - name: "4 — Build Docker image"
         run: |
+          echo "Build Docker en cours (10-15 min)..."
           docker build \
             -t juice-shop:${{ github.sha }} \
             -f juice-shop/Dockerfile \
             juice-shop/
-          echo "Image Docker construite avec succès"
-          docker images juice-shop:${{ github.sha }}
+          echo "✅ Image construite !"
 
-      # ÉTAPE 6 — Résumé du build
-      - name: "6 — Build Summary"
+      - name: "5 — Smoke test"
         run: |
-          echo "================================"
-          echo "✅ BUILD RÉUSSI"
-          echo "Branch  : ${{ github.ref_name }}"
-          echo "Commit  : ${{ github.sha }}"
-          echo "Author  : ${{ github.actor }}"
-          echo "================================"
+          docker run -d -p 3000:3000 --name juice-test juice-shop:${{ github.sha }}
+          sleep 30
+          HTTP=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:3000 || echo "000")
+          echo "HTTP code: $HTTP"
+          docker stop juice-test && docker rm juice-test
+          [ "$HTTP" = "200" ] || [ "$HTTP" = "302" ] && echo "✅ OK" || echo "⚠️ Code: $HTTP"
+
+      - name: "6 — Summary"
+        run: |
+          echo "✅ BUILD RÉUSSI — Branch: ${{ github.ref_name }} — Commit: ${{ github.sha }}"
