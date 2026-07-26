@@ -30,6 +30,46 @@ jobs:
             -f juice-shop/Dockerfile \
             juice-shop/
 
+  sbom:
+    name: Generate SBOM (Syft)
+    runs-on: ubuntu-latest
+    needs: build
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build Docker image
+        run: |
+          docker build \
+            -t juice-shop:latest \
+            -f juice-shop/Dockerfile \
+            juice-shop/
+
+      - name: Install Syft
+        uses: anchore/sbom-action@v0
+
+      - name: Generate CycloneDX SBOM
+        run: |
+          syft juice-shop:latest \
+            -o cyclonedx-json \
+            > sbom.json
+
+      - name: Upload SBOM Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: sbom
+          path: sbom.json
+
+      - name: Upload SBOM to DefectDojo
+        run: |
+          curl -X POST "${{ secrets.DEFECTDOJO_URL }}/api/v2/import-scan/" \
+          -H "Authorization: Token ${{ secrets.DEFECTDOJO_API_KEY }}" \
+          -F "engagement=${{ secrets.DEFECTDOJO_ENGAGEMENT }}" \
+          -F "scan_type=CycloneDX Scan" \
+          -F "file=@sbom.json" \
+          -F "active=true" \
+          -F "verified=true"
+
   trivy-image:
     name: Trivy Image Scan
     runs-on: ubuntu-latest
@@ -40,7 +80,6 @@ jobs:
       security-events: write
 
     steps:
-
       - uses: actions/checkout@v4
 
       - name: Build image
@@ -87,7 +126,6 @@ jobs:
       security-events: write
 
     steps:
-
       - uses: actions/checkout@v4
 
       - name: Run Trivy Filesystem Scan
@@ -128,7 +166,6 @@ jobs:
       security-events: write
 
     steps:
-
       - uses: actions/checkout@v4
 
       - uses: actions/setup-python@v5
@@ -136,7 +173,8 @@ jobs:
           python-version: "3.x"
 
       - name: Install Semgrep
-        run: pip install semgrep
+        run: |
+          pip install semgrep
 
       - name: Run Semgrep
         run: |
