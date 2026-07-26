@@ -17,11 +17,9 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
+      - uses: actions/setup-node@v4
         with:
           node-version: 20
 
@@ -42,6 +40,7 @@ jobs:
       security-events: write
 
     steps:
+
       - uses: actions/checkout@v4
 
       - name: Build image
@@ -69,6 +68,16 @@ jobs:
           name: trivy-image
           path: trivy-image.sarif
 
+      - name: Upload to DefectDojo
+        run: |
+          curl -X POST "${{ secrets.DEFECTDOJO_URL }}/api/v2/import-scan/" \
+          -H "Authorization: Token ${{ secrets.DEFECTDOJO_API_KEY }}" \
+          -F "engagement=${{ secrets.DEFECTDOJO_ENGAGEMENT }}" \
+          -F "scan_type=SARIF" \
+          -F "file=@trivy-image.sarif" \
+          -F "active=true" \
+          -F "verified=true"
+
   trivy-fs:
     name: Trivy Filesystem Scan
     runs-on: ubuntu-latest
@@ -78,6 +87,7 @@ jobs:
       security-events: write
 
     steps:
+
       - uses: actions/checkout@v4
 
       - name: Run Trivy Filesystem Scan
@@ -99,6 +109,16 @@ jobs:
           name: trivy-fs
           path: trivy-fs.sarif
 
+      - name: Upload to DefectDojo
+        run: |
+          curl -X POST "${{ secrets.DEFECTDOJO_URL }}/api/v2/import-scan/" \
+          -H "Authorization: Token ${{ secrets.DEFECTDOJO_API_KEY }}" \
+          -F "engagement=${{ secrets.DEFECTDOJO_ENGAGEMENT }}" \
+          -F "scan_type=SARIF" \
+          -F "file=@trivy-fs.sarif" \
+          -F "active=true" \
+          -F "verified=true"
+
   semgrep:
     name: Semgrep SAST
     runs-on: ubuntu-latest
@@ -108,16 +128,15 @@ jobs:
       security-events: write
 
     steps:
+
       - uses: actions/checkout@v4
 
-      - name: Setup Python
-        uses: actions/setup-python@v5
+      - uses: actions/setup-python@v5
         with:
           python-version: "3.x"
 
       - name: Install Semgrep
-        run: |
-          pip install semgrep
+        run: pip install semgrep
 
       - name: Run Semgrep
         run: |
@@ -137,3 +156,13 @@ jobs:
         with:
           name: semgrep
           path: semgrep.sarif
+
+      - name: Upload to DefectDojo
+        run: |
+          curl -X POST "${{ secrets.DEFECTDOJO_URL }}/api/v2/import-scan/" \
+          -H "Authorization: Token ${{ secrets.DEFECTDOJO_API_KEY }}" \
+          -F "engagement=${{ secrets.DEFECTDOJO_ENGAGEMENT }}" \
+          -F "scan_type=SARIF" \
+          -F "file=@semgrep.sarif" \
+          -F "active=true" \
+          -F "verified=true"
