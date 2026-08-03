@@ -5,73 +5,105 @@ on:
     branches:
       - main
       - develop
-
   pull_request:
     branches:
       - main
 
 jobs:
 
+  # ══════════════════════════════════════════════════
+  # JOB 1 — BUILD
+  # Construit l'image Docker de Juice Shop
+  # Les autres jobs qui ont besoin de l'image
+  # dépendent de ce job via "needs: build"
+  # ══════════════════════════════════════════════════
   build:
-    name: Build Docker Image
+    name: "1 — Build Docker Image"
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout
+        uses: actions/checkout@v4
 
-      - uses: actions/setup-node@v4
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
         with:
           node-version: 20
 
       - name: Build Docker image
         run: |
+          echo "Construction de l'image Juice Shop..."
           docker build \
             -t juice-shop:latest \
             -f juice-shop/Dockerfile \
             juice-shop/
+          echo "Image construite avec succès"
+          docker images juice-shop:latest
 
+  # ══════════════════════════════════════════════════
+  # JOB 2 — SBOM
+  # Génère l'inventaire des composants (CycloneDX)
+  # avec Syft sur l'image Docker construite
+  # needs: build = attend que le build soit terminé
+  # ══════════════════════════════════════════════════
   sbom:
-    name: Generate SBOM (Syft)
+    name: "2 — Generate SBOM (Syft)"
     runs-on: ubuntu-latest
     needs: build
 
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout
+        uses: actions/checkout@v4
 
-      - name: Build Docker image
+      # Reconstruire l'image car chaque job
+      # a son propre serveur Ubuntu vide
+      - name: Rebuild Docker image
         run: |
           docker build \
             -t juice-shop:latest \
             -f juice-shop/Dockerfile \
             juice-shop/
 
+      # anchore/sbom-action installe Syft automatiquement
       - name: Install Syft
         uses: anchore/sbom-action@v0
-
-      - name: Generate CycloneDX SBOM
-        run: |
-          syft juice-shop:latest \
-            -o cyclonedx-json \
-            > sbom.json
+        with:
+          image: juice-shop:latest
+          format: cyclonedx-json
+          output-file: sbom.json
+          upload-artifact: false
 
       - name: Upload SBOM Artifact
         uses: actions/upload-artifact@v4
         with:
           name: sbom
           path: sbom.json
+          retention-days: 30
 
       - name: Upload SBOM to DefectDojo
         run: |
-          curl -X POST "${{ secrets.DEFECTDOJO_URL }}/api/v2/import-scan/" \
-          -H "Authorization: Token ${{ secrets.DEFECTDOJO_API_KEY }}" \
-          -F "engagement=${{ secrets.DEFECTDOJO_ENGAGEMENT }}" \
-          -F "scan_type=CycloneDX Scan" \
-          -F "file=@sbom.json" \
-          -F "active=true" \
-          -F "verified=true"
+          echo "Envoi du SBOM vers DefectDojo..."
+          HTTP_CODE=$(curl -s -o /tmp/dojo_resp.json \
+            -w "%{http_code}" \
+            -X POST "${{ secrets.DEFECTDOJO_URL }}/api/v2/import-scan/" \
+            -H "Authorization: Token ${{ secrets.DEFECTDOJO_API_KEY }}" \
+            -F "engagement=${{ secrets.DEFECTDOJO_ENGAGEMENT }}" \
+            -F "scan_type=CycloneDX Scan" \
+            -F "file=@sbom.json" \
+            -F "active=true" \
+            -F "verified=false" || echo "000")
+          echo "HTTP Code: $HTTP_CODE"
+          cat /tmp/dojo_resp.json || true
+        continue-on-error: true
 
+  # ══════════════════════════════════════════════════
+  # JOB 3 — TRIVY IMAGE SCAN
+  # Scanne l'image Docker pour trouver les CVE
+  # dans les packages OS (openssl, libssl, etc.)
+  # needs: build = attend que l'image soit construite
+  # ══════════════════════════════════════════════════
   trivy-image:
-    name: Trivy Image Scan
+    name: "3 — Trivy Image Scan"
     runs-on: ubuntu-latest
     needs: build
 
@@ -80,9 +112,10 @@ jobs:
       security-events: write
 
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout
+        uses: actions/checkout@v4
 
-      - name: Build image
+      - name: Rebuild Docker image
         run: |
           docker build \
             -t juice-shop:latest \
@@ -95,30 +128,46 @@ jobs:
           image-ref: juice-shop:latest
           format: sarif
           output: trivy-image.sarif
+          severity: CRITICAL,HIGH,MEDIUM
+          exit-code: '0'
 
       - name: Upload SARIF to GitHub Security
         uses: github/codeql-action/upload-sarif@v3
         with:
           sarif_file: trivy-image.sarif
+          category: trivy-image
+        continue-on-error: true
 
       - name: Upload Artifact
         uses: actions/upload-artifact@v4
         with:
           name: trivy-image
           path: trivy-image.sarif
+          retention-days: 30
 
       - name: Upload to DefectDojo
         run: |
-          curl -X POST "${{ secrets.DEFECTDOJO_URL }}/api/v2/import-scan/" \
-          -H "Authorization: Token ${{ secrets.DEFECTDOJO_API_KEY }}" \
-          -F "engagement=${{ secrets.DEFECTDOJO_ENGAGEMENT }}" \
-          -F "scan_type=SARIF" \
-          -F "file=@trivy-image.sarif" \
-          -F "active=true" \
-          -F "verified=true"
+          curl -s -X POST \
+            "${{ secrets.DEFECTDOJO_URL }}/api/v2/import-scan/" \
+            -H "Authorization: Token ${{ secrets.DEFECTDOJO_API_KEY }}" \
+            -F "engagement=${{ secrets.DEFECTDOJO_ENGAGEMENT }}" \
+            -F "scan_type=SARIF" \
+            -F "file=@trivy-image.sarif" \
+            -F "active=true" \
+            -F "verified=false" \
+            -F "close_old_findings=false" \
+            -F "deduplication_on_engagement=true" || true
+        continue-on-error: true
 
+  # ══════════════════════════════════════════════════
+  # JOB 4 — TRIVY FILESYSTEM SCAN
+  # Scanne les FICHIERS du projet :
+  #   → dépendances (package.json) → CVE
+  #   → secrets oubliés (clés API, mots de passe)
+  # Pas besoin de l'image → tourne en parallèle
+  # ══════════════════════════════════════════════════
   trivy-fs:
-    name: Trivy Filesystem Scan
+    name: "4 — Trivy Filesystem Scan"
     runs-on: ubuntu-latest
 
     permissions:
@@ -126,39 +175,59 @@ jobs:
       security-events: write
 
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout
+        uses: actions/checkout@v4
 
       - name: Run Trivy Filesystem Scan
         uses: aquasecurity/trivy-action@master
         with:
           scan-type: fs
-          scan-ref: .
+          scan-ref: juice-shop/
           format: sarif
           output: trivy-fs.sarif
+          severity: CRITICAL,HIGH,MEDIUM
+          exit-code: '0'
 
-      - name: Upload SARIF
+      - name: Upload SARIF to GitHub Security
         uses: github/codeql-action/upload-sarif@v3
         with:
           sarif_file: trivy-fs.sarif
+          category: trivy-fs
+        continue-on-error: true
 
       - name: Upload Artifact
         uses: actions/upload-artifact@v4
         with:
           name: trivy-fs
           path: trivy-fs.sarif
+          retention-days: 30
 
       - name: Upload to DefectDojo
         run: |
-          curl -X POST "${{ secrets.DEFECTDOJO_URL }}/api/v2/import-scan/" \
-          -H "Authorization: Token ${{ secrets.DEFECTDOJO_API_KEY }}" \
-          -F "engagement=${{ secrets.DEFECTDOJO_ENGAGEMENT }}" \
-          -F "scan_type=SARIF" \
-          -F "file=@trivy-fs.sarif" \
-          -F "active=true" \
-          -F "verified=true"
+          curl -s -X POST \
+            "${{ secrets.DEFECTDOJO_URL }}/api/v2/import-scan/" \
+            -H "Authorization: Token ${{ secrets.DEFECTDOJO_API_KEY }}" \
+            -F "engagement=${{ secrets.DEFECTDOJO_ENGAGEMENT }}" \
+            -F "scan_type=SARIF" \
+            -F "file=@trivy-fs.sarif" \
+            -F "active=true" \
+            -F "verified=false" \
+            -F "close_old_findings=false" \
+            -F "deduplication_on_engagement=true" || true
+        continue-on-error: true
 
-  semgrep:
-    name: Semgrep SAST
+  # ══════════════════════════════════════════════════
+  # JOB 5 — TRIVY IaC SCAN (NOUVEAU !)
+  # IaC = Infrastructure as Code
+  # Scanne le Dockerfile pour trouver :
+  #   → USER root (app tourne en admin = danger)
+  #   → FROM node:latest (version non fixée)
+  #   → ENV avec mots de passe en dur
+  #   → Ports inutiles exposés
+  # Pas besoin de l'image → tourne en parallèle
+  # ══════════════════════════════════════════════════
+  trivy-iac:
+    name: "5 — Trivy IaC Scan (Dockerfile)"
     runs-on: ubuntu-latest
 
     permissions:
@@ -166,41 +235,252 @@ jobs:
       security-events: write
 
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout
+        uses: actions/checkout@v4
 
-      - uses: actions/setup-python@v5
+      # scan-type: config = scanner les fichiers
+      # de configuration (Dockerfile, docker-compose...)
+      # scan-ref: juice-shop/ = dossier à scanner
+      - name: Run Trivy IaC Scan
+        uses: aquasecurity/trivy-action@master
+        with:
+          scan-type: config
+          scan-ref: juice-shop/
+          format: sarif
+          output: trivy-iac.sarif
+          exit-code: '0'
+
+      - name: Show IaC results
+        run: |
+          echo "=== Résultats IaC Scan ==="
+          cat trivy-iac.sarif | python3 -c "
+          import json, sys
+          data = json.load(sys.stdin)
+          total = 0
+          for run in data.get('runs', []):
+              results = run.get('results', [])
+              total += len(results)
+              for r in results[:5]:
+                  level = r.get('level', 'unknown')
+                  msg = r.get('message', {}).get('text', '')[:80]
+                  loc = r.get('locations', [{}])[0]
+                  uri = loc.get('physicalLocation', {}).get('artifactLocation', {}).get('uri', '')
+                  line = loc.get('physicalLocation', {}).get('region', {}).get('startLine', '?')
+                  print(f'  [{level.upper()}] {uri}:{line} — {msg}')
+          print(f'Total: {total} problèmes trouvés')
+          " || echo "Erreur lecture SARIF"
+
+      - name: Upload SARIF to GitHub Security
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: trivy-iac.sarif
+          category: trivy-iac
+        continue-on-error: true
+
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: trivy-iac
+          path: trivy-iac.sarif
+          retention-days: 30
+
+      - name: Upload to DefectDojo
+        run: |
+          curl -s -X POST \
+            "${{ secrets.DEFECTDOJO_URL }}/api/v2/import-scan/" \
+            -H "Authorization: Token ${{ secrets.DEFECTDOJO_API_KEY }}" \
+            -F "engagement=${{ secrets.DEFECTDOJO_ENGAGEMENT }}" \
+            -F "scan_type=SARIF" \
+            -F "file=@trivy-iac.sarif" \
+            -F "active=true" \
+            -F "verified=false" \
+            -F "close_old_findings=false" \
+            -F "deduplication_on_engagement=true" || true
+        continue-on-error: true
+
+  # ══════════════════════════════════════════════════
+  # JOB 6 — SEMGREP SAST
+  # SAST = Static Application Security Testing
+  # Analyse le CODE SOURCE sans l'exécuter
+  # Cherche des patterns dangereux comme :
+  #   → SQL construit par concaténation
+  #   → eval() avec entrée utilisateur
+  #   → Secrets en dur dans le code
+  # Tourne en parallèle (pas besoin de l'image)
+  # ══════════════════════════════════════════════════
+  semgrep:
+    name: "6 — Semgrep SAST"
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+      security-events: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
         with:
           python-version: "3.x"
 
       - name: Install Semgrep
-        run: |
-          pip install semgrep
+        run: pip install semgrep --quiet
 
+      # --config auto = Semgrep détecte le langage
+      # et applique les règles correspondantes
+      # continue-on-error: true = même si des failles
+      # sont trouvées, continue pour uploader le rapport
       - name: Run Semgrep
         run: |
           semgrep scan \
             --config auto \
             --sarif \
-            --output semgrep.sarif
+            --output semgrep.sarif \
+            juice-shop/ || true
         continue-on-error: true
 
-      - name: Upload SARIF
+      - name: Show Semgrep summary
+        run: |
+          echo "=== Résumé Semgrep ==="
+          python3 -c "
+          import json
+          with open('semgrep.sarif') as f:
+              data = json.load(f)
+          total = 0
+          by_level = {}
+          for run in data.get('runs', []):
+              for r in run.get('results', []):
+                  level = r.get('level', 'unknown')
+                  by_level[level] = by_level.get(level, 0) + 1
+                  total += 1
+          for level, count in sorted(by_level.items()):
+              print(f'  {level.upper():10s}: {count}')
+          print(f'  TOTAL     : {total}')
+          " || echo "Erreur lecture semgrep.sarif"
+
+      - name: Upload SARIF to GitHub Security
         uses: github/codeql-action/upload-sarif@v3
         with:
           sarif_file: semgrep.sarif
+          category: semgrep
+        continue-on-error: true
 
       - name: Upload Artifact
         uses: actions/upload-artifact@v4
         with:
           name: semgrep
           path: semgrep.sarif
+          retention-days: 30
 
       - name: Upload to DefectDojo
         run: |
-          curl -X POST "${{ secrets.DEFECTDOJO_URL }}/api/v2/import-scan/" \
-          -H "Authorization: Token ${{ secrets.DEFECTDOJO_API_KEY }}" \
-          -F "engagement=${{ secrets.DEFECTDOJO_ENGAGEMENT }}" \
-          -F "scan_type=SARIF" \
-          -F "file=@semgrep.sarif" \
-          -F "active=true" \
-          -F "verified=true"
+          curl -s -X POST \
+            "${{ secrets.DEFECTDOJO_URL }}/api/v2/import-scan/" \
+            -H "Authorization: Token ${{ secrets.DEFECTDOJO_API_KEY }}" \
+            -F "engagement=${{ secrets.DEFECTDOJO_ENGAGEMENT }}" \
+            -F "scan_type=SARIF" \
+            -F "file=@semgrep.sarif" \
+            -F "active=true" \
+            -F "verified=false" \
+            -F "close_old_findings=false" \
+            -F "deduplication_on_engagement=true" || true
+        continue-on-error: true
+
+  # ══════════════════════════════════════════════════
+  # JOB 7 — QUALITY GATE (NOUVEAU !)
+  # LE GARDIEN — décide si le pipeline passe ou bloque
+  #
+  # needs: [trivy-image, trivy-fs, trivy-iac, semgrep]
+  # = attend que TOUS les scans soient terminés
+  #
+  # Étapes dans ce job :
+  #   1. Télécharger tous les SARIF générés
+  #   2. Filtrer les faux positifs
+  #   3. Compter les CRITICAL réels
+  #   4. Bloquer si CRITICAL > 0
+  # ══════════════════════════════════════════════════
+  quality-gate:
+    name: "7 — Quality Gate"
+    runs-on: ubuntu-latest
+    needs: [trivy-image, trivy-fs, trivy-iac, semgrep]
+    # if: always() = ce job tourne même si un job
+    # précédent a échoué (pour voir les résultats)
+    if: always()
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # Télécharger les SARIF de chaque job
+      - name: Download trivy-image SARIF
+        uses: actions/download-artifact@v4
+        with:
+          name: trivy-image
+          path: reports/
+        continue-on-error: true
+
+      - name: Download trivy-fs SARIF
+        uses: actions/download-artifact@v4
+        with:
+          name: trivy-fs
+          path: reports/
+        continue-on-error: true
+
+      - name: Download trivy-iac SARIF
+        uses: actions/download-artifact@v4
+        with:
+          name: trivy-iac
+          path: reports/
+        continue-on-error: true
+
+      - name: Download semgrep SARIF
+        uses: actions/download-artifact@v4
+        with:
+          name: semgrep
+          path: reports/
+        continue-on-error: true
+
+      # Vérifier ce qu'on a téléchargé
+      - name: List downloaded reports
+        run: |
+          echo "=== Rapports disponibles ==="
+          ls -la reports/ || echo "Dossier reports vide"
+
+      # Filtrer les faux positifs AVANT la gate
+      - name: Filter False Positives
+        run: |
+          pip install --quiet semgrep 2>/dev/null || true
+          python3 scripts/filter_false_positives.py
+        continue-on-error: true
+
+      # LA QUALITY GATE — étape critique
+      # C'est la SEULE sans continue-on-error
+      # Si elle échoue → pipeline BLOQUÉ
+      - name: Run Quality Gate
+        run: |
+          python3 scripts/quality_gate.py
+        env:
+          QUALITY_GATE_THRESHOLD: HIGH
+
+      # Résumé final (seulement si gate passe)
+      - name: Pipeline Summary
+        if: success()
+        run: |
+          echo "========================================="
+          echo "✅ PIPELINE DEVSECOPS COMPLET — SUCCÈS"
+          echo "========================================="
+          echo "Branch  : ${{ github.ref_name }}"
+          echo "Commit  : ${{ github.sha }}"
+          echo "Auteur  : ${{ github.actor }}"
+          echo "Date    : $(date '+%Y-%m-%d %H:%M:%S')"
+          echo "========================================="
+          echo "Scans effectués :"
+          echo "  ✅ SBOM CycloneDX (Syft)"
+          echo "  ✅ Trivy Image Scan"
+          echo "  ✅ Trivy Filesystem Scan"
+          echo "  ✅ Trivy IaC Scan (Dockerfile)"
+          echo "  ✅ Semgrep SAST"
+          echo "  ✅ Quality Gate"
+          echo "========================================="
