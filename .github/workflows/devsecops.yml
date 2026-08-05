@@ -446,14 +446,14 @@ jobs:
           path: reports/
         continue-on-error: true
        # 👇 AJOUTE CE BLOC ICI
-     - name: Debug reports
-       run: |
-         echo "PWD=$(pwd)"
-         echo "===== Current directory ====="
-         ls -la
-         echo "===== Reports ====="
-         ls -la reports || true
-         find . -name "*.sarif"
+      - name: Debug reports
+        run: |
+          echo "PWD=$(pwd)"
+          echo "===== Current directory ====="
+          ls -la
+          echo "===== Reports ====="
+          ls -la reports || true
+          find . -name "*.sarif"
       # Vérifier ce qu'on a téléchargé
       - name: List downloaded reports
         run: |
