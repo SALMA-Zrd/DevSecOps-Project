@@ -1,0 +1,32 @@
+{
+  "_comment": "Config des faux positifs / risques acceptés. Revue recommandée à chaque mise à jour de la base CVE de Trivy (mensuelle).",
+
+  "fp_semgrep_rules": [
+    "javascript.browser.security.eval-detected.eval-detected",
+    "javascript.lang.security.audit.unsafe-innerhtml.unsafe-innerhtml"
+  ],
+
+  "accepted_cves": [
+    {
+      "id": "CVE-2015-9235",
+      "reason": "jsonwebtoken - vulnérabilité volontaire du challenge Juice Shop",
+      "added_by": "salma",
+      "review_date": "2026-08-05"
+    },
+    {
+      "id": "CVE-2019-10744",
+      "reason": "lodash - vulnérabilité volontaire du challenge Juice Shop",
+      "added_by": "salma",
+      "review_date": "2026-08-05"
+    }
+  ],
+
+  "ignored_path_substrings": [
+    "test/",
+    "spec/",
+    "node_modules/",
+    "frontend/node_modules/",
+    "dist/",
+    "build/"
+  ]
+}
