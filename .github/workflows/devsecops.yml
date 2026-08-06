@@ -80,7 +80,7 @@ jobs:
           path: sbom.json
           retention-days: 30
 
-     - name: Upload SBOM to DefectDojo
+      - name: Upload SBOM to DefectDojo
         run: |
           echo "Envoi du SBOM vers DefectDojo..."
           HTTP_CODE=$(curl -s -o /tmp/dojo_resp.json \
