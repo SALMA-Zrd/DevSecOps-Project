@@ -80,19 +80,21 @@ jobs:
           path: sbom.json
           retention-days: 30
 
-      - name: Upload SBOM to DefectDojo
+     - name: Upload SBOM to DefectDojo
         run: |
-          echo "URL configurée (masquée par GitHub) :"
-          echo "${{ secrets.DEFECTDOJO_URL }}" | sed 's/./*/g'  # juste pour voir la longueur
-          curl -v -s -o /tmp/dojo_resp.json \
-            -w "\nHTTP_CODE=%{http_code}\n" \
-            -X POST "${{ secrets.DEFECTDOJO_URL }}/api/v2/import-scan/" \
+          echo "Envoi du SBOM vers DefectDojo..."
+          HTTP_CODE=$(curl -s -o /tmp/dojo_resp.json \
+            -w "%{http_code}" \
+            -X POST "${{ secrets.DEFECTDOJO_URL }}/api/v2/reimport-scan/" \
             -H "Authorization: Token ${{ secrets.DEFECTDOJO_API_KEY }}" \
             -F "engagement=${{ secrets.DEFECTDOJO_ENGAGEMENT }}" \
             -F "scan_type=CycloneDX Scan" \
+            -F "test_title=SBOM CycloneDX" \
             -F "file=@sbom.json" \
             -F "active=true" \
-            -F "verified=false"
+            -F "verified=false" || echo "000")
+          echo "HTTP Code: $HTTP_CODE"
+          cat /tmp/dojo_resp.json || true
         continue-on-error: true
   # ══════════════════════════════════════════════════
   # JOB 3 — TRIVY IMAGE SCAN
@@ -148,17 +150,17 @@ jobs:
       - name: Upload to DefectDojo
         run: |
           curl -s -X POST \
-            "${{ secrets.DEFECTDOJO_URL }}/api/v2/import-scan/" \
+            "${{ secrets.DEFECTDOJO_URL }}/api/v2/reimport-scan/" \
             -H "Authorization: Token ${{ secrets.DEFECTDOJO_API_KEY }}" \
             -F "engagement=${{ secrets.DEFECTDOJO_ENGAGEMENT }}" \
             -F "scan_type=SARIF" \
+            -F "test_title=Trivy Image Scan" \
             -F "file=@trivy-image.sarif" \
             -F "active=true" \
             -F "verified=false" \
-            -F "close_old_findings=false" \
+            -F "close_old_findings=true" \
             -F "deduplication_on_engagement=true" || true
         continue-on-error: true
-
   # ══════════════════════════════════════════════════
   # JOB 4 — TRIVY FILESYSTEM SCAN
   # Scanne les FICHIERS du projet :
@@ -207,17 +209,17 @@ jobs:
       - name: Upload to DefectDojo
         run: |
           curl -s -X POST \
-            "${{ secrets.DEFECTDOJO_URL }}/api/v2/import-scan/" \
+            "${{ secrets.DEFECTDOJO_URL }}/api/v2/reimport-scan/" \
             -H "Authorization: Token ${{ secrets.DEFECTDOJO_API_KEY }}" \
             -F "engagement=${{ secrets.DEFECTDOJO_ENGAGEMENT }}" \
             -F "scan_type=SARIF" \
+            -F "test_title=Trivy Filesystem Scan" \
             -F "file=@trivy-fs.sarif" \
             -F "active=true" \
             -F "verified=false" \
-            -F "close_old_findings=false" \
+            -F "close_old_findings=true" \
             -F "deduplication_on_engagement=true" || true
         continue-on-error: true
-
   # ══════════════════════════════════════════════════
   # JOB 5 — TRIVY IaC SCAN (NOUVEAU !)
   # IaC = Infrastructure as Code
@@ -299,7 +301,20 @@ jobs:
             -F "close_old_findings=false" \
             -F "deduplication_on_engagement=true" || true
         continue-on-error: true
-
+     - name: Upload to DefectDojo
+        run: |
+          curl -s -X POST \
+            "${{ secrets.DEFECTDOJO_URL }}/api/v2/reimport-scan/" \
+            -H "Authorization: Token ${{ secrets.DEFECTDOJO_API_KEY }}" \
+            -F "engagement=${{ secrets.DEFECTDOJO_ENGAGEMENT }}" \
+            -F "scan_type=SARIF" \
+            -F "test_title=Trivy IaC Scan" \
+            -F "file=@trivy-iac.sarif" \
+            -F "active=true" \
+            -F "verified=false" \
+            -F "close_old_findings=true" \
+            -F "deduplication_on_engagement=true" || true
+        continue-on-error: true
   # ══════════════════════════════════════════════════
   # JOB 6 — SEMGREP SAST
   # SAST = Static Application Security Testing
@@ -376,20 +391,20 @@ jobs:
           path: semgrep.sarif
           retention-days: 30
 
-      - name: Upload to DefectDojo
+     - name: Upload to DefectDojo
         run: |
           curl -s -X POST \
-            "${{ secrets.DEFECTDOJO_URL }}/api/v2/import-scan/" \
+            "${{ secrets.DEFECTDOJO_URL }}/api/v2/reimport-scan/" \
             -H "Authorization: Token ${{ secrets.DEFECTDOJO_API_KEY }}" \
             -F "engagement=${{ secrets.DEFECTDOJO_ENGAGEMENT }}" \
             -F "scan_type=SARIF" \
+            -F "test_title=Semgrep SAST" \
             -F "file=@semgrep.sarif" \
             -F "active=true" \
             -F "verified=false" \
-            -F "close_old_findings=false" \
+            -F "close_old_findings=true" \
             -F "deduplication_on_engagement=true" || true
         continue-on-error: true
-
   # ══════════════════════════════════════════════════
   # JOB 7 — QUALITY GATE (NOUVEAU !)
   # LE GARDIEN — décide si le pipeline passe ou bloque
