@@ -467,6 +467,8 @@ jobs:
           pip install --quiet semgrep 2>/dev/null || true
           python3 scripts/filter_false_positives.py
         continue-on-error: true
+      - name: List remaining findings
+        run: python3 scripts/list_remaining_findings.py
 
       # LA QUALITY GATE — étape critique
       # C'est la SEULE sans continue-on-error
