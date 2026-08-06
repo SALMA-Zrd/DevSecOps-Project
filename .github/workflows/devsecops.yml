@@ -291,19 +291,6 @@ jobs:
       - name: Upload to DefectDojo
         run: |
           curl -s -X POST \
-            "${{ secrets.DEFECTDOJO_URL }}/api/v2/import-scan/" \
-            -H "Authorization: Token ${{ secrets.DEFECTDOJO_API_KEY }}" \
-            -F "engagement=${{ secrets.DEFECTDOJO_ENGAGEMENT }}" \
-            -F "scan_type=SARIF" \
-            -F "file=@trivy-iac.sarif" \
-            -F "active=true" \
-            -F "verified=false" \
-            -F "close_old_findings=false" \
-            -F "deduplication_on_engagement=true" || true
-        continue-on-error: true
-     - name: Upload to DefectDojo
-        run: |
-          curl -s -X POST \
             "${{ secrets.DEFECTDOJO_URL }}/api/v2/reimport-scan/" \
             -H "Authorization: Token ${{ secrets.DEFECTDOJO_API_KEY }}" \
             -F "engagement=${{ secrets.DEFECTDOJO_ENGAGEMENT }}" \
@@ -315,6 +302,7 @@ jobs:
             -F "close_old_findings=true" \
             -F "deduplication_on_engagement=true" || true
         continue-on-error: true
+
   # ══════════════════════════════════════════════════
   # JOB 6 — SEMGREP SAST
   # SAST = Static Application Security Testing
