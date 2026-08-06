@@ -460,8 +460,6 @@ jobs:
           echo "=== Rapports disponibles ==="
           ls -la reports/ || echo "Dossier reports vide"
 
-      - name: Checkout            # déjà présent, vérifie juste qu'il tourne bien
-        uses: actions/checkout@v4  # récupère aussi accepted-risks.json et .trivyignore du repo
 
       # Filtrer les faux positifs AVANT la gate
       - name: Filter False Positives
