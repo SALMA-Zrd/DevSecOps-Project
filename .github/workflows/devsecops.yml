@@ -90,6 +90,7 @@ jobs:
             -F "engagement_name=GitHub Actions Pipeline" \
             -F "product_name=OWASP Juice Shop" \
             -F "product_type_name=PFA DevSecOps" \
+            -F "auto_create_context=true" \
             -F "scan_type=CycloneDX Scan" \
             -F "test_title=SBOM CycloneDX" \
             -F "file=@sbom.json" \
@@ -157,6 +158,7 @@ jobs:
             -F "engagement_name=GitHub Actions Pipeline" \
             -F "product_name=OWASP Juice Shop" \
             -F "product_type_name=PFA DevSecOps" \
+            -F "auto_create_context=true" \
             -F "scan_type=SARIF" \
             -F "test_title=Trivy Image Scan" \
             -F "file=@trivy-image.sarif" \
@@ -218,6 +220,7 @@ jobs:
             -F "engagement_name=GitHub Actions Pipeline" \
             -F "product_name=OWASP Juice Shop" \
             -F "product_type_name=PFA DevSecOps" \
+            -F "auto_create_context=true" \
             -F "scan_type=SARIF" \
             -F "test_title=Trivy Filesystem Scan" \
             -F "file=@trivy-fs.sarif" \
@@ -303,6 +306,7 @@ jobs:
             -F "engagement_name=GitHub Actions Pipeline" \
             -F "product_name=OWASP Juice Shop" \
             -F "product_type_name=PFA DevSecOps" \
+            -F "auto_create_context=true" \
             -F "scan_type=SARIF" \
             -F "test_title=Trivy IaC Scan" \
             -F "file=@trivy-iac.sarif" \
@@ -396,6 +400,7 @@ jobs:
             -F "engagement_name=GitHub Actions Pipeline" \
             -F "product_name=OWASP Juice Shop" \
             -F "product_type_name=PFA DevSecOps" \
+            -F "auto_create_context=true" \
             -F "scan_type=SARIF" \
             -F "test_title=Semgrep SAST" \
             -F "file=@semgrep.sarif" \
