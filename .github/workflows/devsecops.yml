@@ -87,7 +87,9 @@ jobs:
             -X POST "${{ secrets.DEFECTDOJO_URL }}/api/v2/reimport-scan/" \
             -H "Authorization: Token ${{ secrets.DEFECTDOJO_API_KEY }}" \
             -F "engagement=${{ secrets.DEFECTDOJO_ENGAGEMENT }}" \
+            -F "engagement_name=GitHub Actions Pipeline" \
             -F "product_name=OWASP Juice Shop" \
+            -F "product_type_name=PFA DevSecOps" \
             -F "scan_type=CycloneDX Scan" \
             -F "test_title=SBOM CycloneDX" \
             -F "file=@sbom.json" \
@@ -96,7 +98,6 @@ jobs:
           echo "HTTP Code: $HTTP_CODE"
           cat /tmp/dojo_resp.json || true
         continue-on-error: true
-
   # ══════════════════════════════════════════════════
   # JOB 3 — TRIVY IMAGE SCAN
   # Scanne l'image Docker pour trouver les CVE
@@ -147,14 +148,15 @@ jobs:
           name: trivy-image
           path: trivy-image.sarif
           retention-days: 30
-
       - name: Upload to DefectDojo
         run: |
           curl -s -X POST \
             "${{ secrets.DEFECTDOJO_URL }}/api/v2/reimport-scan/" \
             -H "Authorization: Token ${{ secrets.DEFECTDOJO_API_KEY }}" \
             -F "engagement=${{ secrets.DEFECTDOJO_ENGAGEMENT }}" \
+            -F "engagement_name=GitHub Actions Pipeline" \
             -F "product_name=OWASP Juice Shop" \
+            -F "product_type_name=PFA DevSecOps" \
             -F "scan_type=SARIF" \
             -F "test_title=Trivy Image Scan" \
             -F "file=@trivy-image.sarif" \
@@ -207,14 +209,15 @@ jobs:
           name: trivy-fs
           path: trivy-fs.sarif
           retention-days: 30
-
       - name: Upload to DefectDojo
         run: |
           curl -s -X POST \
             "${{ secrets.DEFECTDOJO_URL }}/api/v2/reimport-scan/" \
             -H "Authorization: Token ${{ secrets.DEFECTDOJO_API_KEY }}" \
             -F "engagement=${{ secrets.DEFECTDOJO_ENGAGEMENT }}" \
+            -F "engagement_name=GitHub Actions Pipeline" \
             -F "product_name=OWASP Juice Shop" \
+            -F "product_type_name=PFA DevSecOps" \
             -F "scan_type=SARIF" \
             -F "test_title=Trivy Filesystem Scan" \
             -F "file=@trivy-fs.sarif" \
@@ -297,7 +300,9 @@ jobs:
             "${{ secrets.DEFECTDOJO_URL }}/api/v2/reimport-scan/" \
             -H "Authorization: Token ${{ secrets.DEFECTDOJO_API_KEY }}" \
             -F "engagement=${{ secrets.DEFECTDOJO_ENGAGEMENT }}" \
+            -F "engagement_name=GitHub Actions Pipeline" \
             -F "product_name=OWASP Juice Shop" \
+            -F "product_type_name=PFA DevSecOps" \
             -F "scan_type=SARIF" \
             -F "test_title=Trivy IaC Scan" \
             -F "file=@trivy-iac.sarif" \
@@ -306,7 +311,6 @@ jobs:
             -F "close_old_findings=true" \
             -F "deduplication_on_engagement=true" || true
         continue-on-error: true
-
   # ══════════════════════════════════════════════════
   # JOB 6 — SEMGREP SAST
   # SAST = Static Application Security Testing
@@ -389,7 +393,9 @@ jobs:
             "${{ secrets.DEFECTDOJO_URL }}/api/v2/reimport-scan/" \
             -H "Authorization: Token ${{ secrets.DEFECTDOJO_API_KEY }}" \
             -F "engagement=${{ secrets.DEFECTDOJO_ENGAGEMENT }}" \
+            -F "engagement_name=GitHub Actions Pipeline" \
             -F "product_name=OWASP Juice Shop" \
+            -F "product_type_name=PFA DevSecOps" \
             -F "scan_type=SARIF" \
             -F "test_title=Semgrep SAST" \
             -F "file=@semgrep.sarif" \
@@ -398,7 +404,6 @@ jobs:
             -F "close_old_findings=true" \
             -F "deduplication_on_engagement=true" || true
         continue-on-error: true
-
 
   # ══════════════════════════════════════════════════
   # JOB 7 — QUALITY GATE (NOUVEAU !)
