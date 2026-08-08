@@ -45,6 +45,8 @@ jobs:
   # Génère l'inventaire des composants (CycloneDX)
   # avec Syft sur l'image Docker construite
   # needs: build = attend que le build soit terminé
+  # Pas de faux positifs à filtrer sur un SBOM
+  # → upload direct vers DefectDojo, inchangé
   # ══════════════════════════════════════════════════
   sbom:
     name: "2 — Generate SBOM (Syft)"
@@ -79,6 +81,7 @@ jobs:
           name: sbom
           path: sbom.json
           retention-days: 30
+
       - name: Upload SBOM to DefectDojo
         run: |
           echo "Envoi du SBOM vers DefectDojo..."
@@ -99,11 +102,14 @@ jobs:
           echo "HTTP Code: $HTTP_CODE"
           cat /tmp/dojo_resp.json || true
         continue-on-error: true
+
   # ══════════════════════════════════════════════════
   # JOB 3 — TRIVY IMAGE SCAN
   # Scanne l'image Docker pour trouver les CVE
   # dans les packages OS (openssl, libssl, etc.)
   # needs: build = attend que l'image soit construite
+  # ⚠️ Upload DefectDojo RETIRÉ d'ici → déplacé dans
+  # quality-gate, après le filtrage des faux positifs
   # ══════════════════════════════════════════════════
   trivy-image:
     name: "3 — Trivy Image Scan"
@@ -132,8 +138,8 @@ jobs:
           format: sarif
           output: trivy-image.sarif
           severity: CRITICAL,HIGH,MEDIUM
-          ignore-unfixed: true          # ← AJOUT
-          trivyignores: .trivyignore    # ← AJOUT
+          ignore-unfixed: true
+          trivyignores: .trivyignore
           exit-code: '0'
 
       - name: Upload SARIF to GitHub Security
@@ -149,30 +155,15 @@ jobs:
           name: trivy-image
           path: trivy-image.sarif
           retention-days: 30
-      - name: Upload to DefectDojo
-        run: |
-          curl -s -X POST \
-            "${{ secrets.DEFECTDOJO_URL }}/api/v2/reimport-scan/" \
-            -H "Authorization: Token ${{ secrets.DEFECTDOJO_API_KEY }}" \
-            -F "engagement=${{ secrets.DEFECTDOJO_ENGAGEMENT }}" \
-            -F "engagement_name=GitHub Actions Pipeline" \
-            -F "product_name=OWASP Juice Shop" \
-            -F "product_type_name=PFA DevSecOps" \
-            -F "auto_create_context=true" \
-            -F "scan_type=SARIF" \
-            -F "test_title=Trivy Image Scan" \
-            -F "file=@trivy-image.sarif" \
-            -F "active=true" \
-            -F "verified=false" \
-            -F "close_old_findings=true" \
-            -F "deduplication_on_engagement=true" || true
-        continue-on-error: true
+
   # ══════════════════════════════════════════════════
   # JOB 4 — TRIVY FILESYSTEM SCAN
   # Scanne les FICHIERS du projet :
   #   → dépendances (package.json) → CVE
   #   → secrets oubliés (clés API, mots de passe)
   # Pas besoin de l'image → tourne en parallèle
+  # ⚠️ Upload DefectDojo RETIRÉ d'ici → déplacé dans
+  # quality-gate, après le filtrage des faux positifs
   # ══════════════════════════════════════════════════
   trivy-fs:
     name: "4 — Trivy Filesystem Scan"
@@ -194,8 +185,8 @@ jobs:
           format: sarif
           output: trivy-fs.sarif
           severity: CRITICAL,HIGH,MEDIUM
-          ignore-unfixed: true          # ← AJOUT
-          trivyignores: .trivyignore    # ← AJOUT
+          ignore-unfixed: true
+          trivyignores: .trivyignore
           exit-code: '0'
 
       - name: Upload SARIF to GitHub Security
@@ -211,26 +202,9 @@ jobs:
           name: trivy-fs
           path: trivy-fs.sarif
           retention-days: 30
-      - name: Upload to DefectDojo
-        run: |
-          curl -s -X POST \
-            "${{ secrets.DEFECTDOJO_URL }}/api/v2/reimport-scan/" \
-            -H "Authorization: Token ${{ secrets.DEFECTDOJO_API_KEY }}" \
-            -F "engagement=${{ secrets.DEFECTDOJO_ENGAGEMENT }}" \
-            -F "engagement_name=GitHub Actions Pipeline" \
-            -F "product_name=OWASP Juice Shop" \
-            -F "product_type_name=PFA DevSecOps" \
-            -F "auto_create_context=true" \
-            -F "scan_type=SARIF" \
-            -F "test_title=Trivy Filesystem Scan" \
-            -F "file=@trivy-fs.sarif" \
-            -F "active=true" \
-            -F "verified=false" \
-            -F "close_old_findings=true" \
-            -F "deduplication_on_engagement=true" || true
-        continue-on-error: true
+
   # ══════════════════════════════════════════════════
-  # JOB 5 — TRIVY IaC SCAN (NOUVEAU !)
+  # JOB 5 — TRIVY IaC SCAN
   # IaC = Infrastructure as Code
   # Scanne le Dockerfile pour trouver :
   #   → USER root (app tourne en admin = danger)
@@ -238,6 +212,8 @@ jobs:
   #   → ENV avec mots de passe en dur
   #   → Ports inutiles exposés
   # Pas besoin de l'image → tourne en parallèle
+  # ⚠️ Upload DefectDojo RETIRÉ d'ici → déplacé dans
+  # quality-gate, après le filtrage des faux positifs
   # ══════════════════════════════════════════════════
   trivy-iac:
     name: "5 — Trivy IaC Scan (Dockerfile)"
@@ -297,24 +273,6 @@ jobs:
           path: trivy-iac.sarif
           retention-days: 30
 
-      - name: Upload to DefectDojo
-        run: |
-          curl -s -X POST \
-            "${{ secrets.DEFECTDOJO_URL }}/api/v2/reimport-scan/" \
-            -H "Authorization: Token ${{ secrets.DEFECTDOJO_API_KEY }}" \
-            -F "engagement=${{ secrets.DEFECTDOJO_ENGAGEMENT }}" \
-            -F "engagement_name=GitHub Actions Pipeline" \
-            -F "product_name=OWASP Juice Shop" \
-            -F "product_type_name=PFA DevSecOps" \
-            -F "auto_create_context=true" \
-            -F "scan_type=SARIF" \
-            -F "test_title=Trivy IaC Scan" \
-            -F "file=@trivy-iac.sarif" \
-            -F "active=true" \
-            -F "verified=false" \
-            -F "close_old_findings=true" \
-            -F "deduplication_on_engagement=true" || true
-        continue-on-error: true
   # ══════════════════════════════════════════════════
   # JOB 6 — SEMGREP SAST
   # SAST = Static Application Security Testing
@@ -324,6 +282,8 @@ jobs:
   #   → eval() avec entrée utilisateur
   #   → Secrets en dur dans le code
   # Tourne en parallèle (pas besoin de l'image)
+  # ⚠️ Upload DefectDojo RETIRÉ d'ici → déplacé dans
+  # quality-gate, après le filtrage des faux positifs
   # ══════════════════════════════════════════════════
   semgrep:
     name: "6 — Semgrep SAST"
@@ -390,28 +350,9 @@ jobs:
           name: semgrep
           path: semgrep.sarif
           retention-days: 30
-    
-      - name: Upload to DefectDojo
-        run: |
-          curl -s -X POST \
-            "${{ secrets.DEFECTDOJO_URL }}/api/v2/reimport-scan/" \
-            -H "Authorization: Token ${{ secrets.DEFECTDOJO_API_KEY }}" \
-            -F "engagement=${{ secrets.DEFECTDOJO_ENGAGEMENT }}" \
-            -F "engagement_name=GitHub Actions Pipeline" \
-            -F "product_name=OWASP Juice Shop" \
-            -F "product_type_name=PFA DevSecOps" \
-            -F "auto_create_context=true" \
-            -F "scan_type=SARIF" \
-            -F "test_title=Semgrep SAST" \
-            -F "file=@semgrep.sarif" \
-            -F "active=true" \
-            -F "verified=false" \
-            -F "close_old_findings=true" \
-            -F "deduplication_on_engagement=true" || true
-        continue-on-error: true
 
   # ══════════════════════════════════════════════════
-  # JOB 7 — QUALITY GATE (NOUVEAU !)
+  # JOB 7 — QUALITY GATE
   # LE GARDIEN — décide si le pipeline passe ou bloque
   #
   # needs: [trivy-image, trivy-fs, trivy-iac, semgrep]
@@ -420,8 +361,10 @@ jobs:
   # Étapes dans ce job :
   #   1. Télécharger tous les SARIF générés
   #   2. Filtrer les faux positifs
-  #   3. Compter les CRITICAL réels
-  #   4. Bloquer si CRITICAL > 0
+  #   3. Envoyer les résultats FILTRÉS à DefectDojo
+  #      (nouveau : upload déplacé ici, après filtrage)
+  #   4. Compter les CRITICAL/HIGH réels
+  #   5. Bloquer si au-dessus du seuil
   # ══════════════════════════════════════════════════
   quality-gate:
     name: "7 — Quality Gate"
@@ -463,28 +406,119 @@ jobs:
           name: semgrep
           path: reports/
         continue-on-error: true
-       # 👇 AJOUTE CE BLOC ICI
-      - name: Debug reports
-        run: |
-          echo "PWD=$(pwd)"
-          echo "===== Current directory ====="
-          ls -la
-          echo "===== Reports ====="
-          ls -la reports || true
-          find . -name "*.sarif"
+
       # Vérifier ce qu'on a téléchargé
       - name: List downloaded reports
         run: |
           echo "=== Rapports disponibles ==="
           ls -la reports/ || echo "Dossier reports vide"
 
-
-      # Filtrer les faux positifs AVANT la gate
+      # Filtrer les faux positifs AVANT la gate ET avant DefectDojo
       - name: Filter False Positives
         run: |
           pip install --quiet semgrep 2>/dev/null || true
           python3 scripts/filter_false_positives.py
         continue-on-error: true
+
+      # ══════════════════════════════════════════════
+      # Upload vers DefectDojo — APRÈS filtrage
+      # Chaque scan a son propre test_title fixe,
+      # reimport-scan + auto_create_context=true
+      # garde un seul Test par scanner, mis à jour
+      # à chaque run au lieu d'en empiler un nouveau
+      # ══════════════════════════════════════════════
+      - name: Upload filtered Trivy Image results to DefectDojo
+        run: |
+          if [ -f reports/trivy-image.sarif ]; then
+            curl -s -X POST \
+              "${{ secrets.DEFECTDOJO_URL }}/api/v2/reimport-scan/" \
+              -H "Authorization: Token ${{ secrets.DEFECTDOJO_API_KEY }}" \
+              -F "engagement=${{ secrets.DEFECTDOJO_ENGAGEMENT }}" \
+              -F "engagement_name=GitHub Actions Pipeline" \
+              -F "product_name=OWASP Juice Shop" \
+              -F "product_type_name=PFA DevSecOps" \
+              -F "auto_create_context=true" \
+              -F "scan_type=SARIF" \
+              -F "test_title=Trivy Image Scan" \
+              -F "file=@reports/trivy-image.sarif" \
+              -F "active=true" \
+              -F "verified=false" \
+              -F "close_old_findings=true" \
+              -F "deduplication_on_engagement=true" || true
+          else
+            echo "⚠️  reports/trivy-image.sarif introuvable, upload sauté"
+          fi
+        continue-on-error: true
+
+      - name: Upload filtered Trivy Filesystem results to DefectDojo
+        run: |
+          if [ -f reports/trivy-fs.sarif ]; then
+            curl -s -X POST \
+              "${{ secrets.DEFECTDOJO_URL }}/api/v2/reimport-scan/" \
+              -H "Authorization: Token ${{ secrets.DEFECTDOJO_API_KEY }}" \
+              -F "engagement=${{ secrets.DEFECTDOJO_ENGAGEMENT }}" \
+              -F "engagement_name=GitHub Actions Pipeline" \
+              -F "product_name=OWASP Juice Shop" \
+              -F "product_type_name=PFA DevSecOps" \
+              -F "auto_create_context=true" \
+              -F "scan_type=SARIF" \
+              -F "test_title=Trivy Filesystem Scan" \
+              -F "file=@reports/trivy-fs.sarif" \
+              -F "active=true" \
+              -F "verified=false" \
+              -F "close_old_findings=true" \
+              -F "deduplication_on_engagement=true" || true
+          else
+            echo "⚠️  reports/trivy-fs.sarif introuvable, upload sauté"
+          fi
+        continue-on-error: true
+
+      - name: Upload filtered Trivy IaC results to DefectDojo
+        run: |
+          if [ -f reports/trivy-iac.sarif ]; then
+            curl -s -X POST \
+              "${{ secrets.DEFECTDOJO_URL }}/api/v2/reimport-scan/" \
+              -H "Authorization: Token ${{ secrets.DEFECTDOJO_API_KEY }}" \
+              -F "engagement=${{ secrets.DEFECTDOJO_ENGAGEMENT }}" \
+              -F "engagement_name=GitHub Actions Pipeline" \
+              -F "product_name=OWASP Juice Shop" \
+              -F "product_type_name=PFA DevSecOps" \
+              -F "auto_create_context=true" \
+              -F "scan_type=SARIF" \
+              -F "test_title=Trivy IaC Scan" \
+              -F "file=@reports/trivy-iac.sarif" \
+              -F "active=true" \
+              -F "verified=false" \
+              -F "close_old_findings=true" \
+              -F "deduplication_on_engagement=true" || true
+          else
+            echo "⚠️  reports/trivy-iac.sarif introuvable, upload sauté"
+          fi
+        continue-on-error: true
+
+      - name: Upload filtered Semgrep results to DefectDojo
+        run: |
+          if [ -f reports/semgrep.sarif ]; then
+            curl -s -X POST \
+              "${{ secrets.DEFECTDOJO_URL }}/api/v2/reimport-scan/" \
+              -H "Authorization: Token ${{ secrets.DEFECTDOJO_API_KEY }}" \
+              -F "engagement=${{ secrets.DEFECTDOJO_ENGAGEMENT }}" \
+              -F "engagement_name=GitHub Actions Pipeline" \
+              -F "product_name=OWASP Juice Shop" \
+              -F "product_type_name=PFA DevSecOps" \
+              -F "auto_create_context=true" \
+              -F "scan_type=SARIF" \
+              -F "test_title=Semgrep SAST" \
+              -F "file=@reports/semgrep.sarif" \
+              -F "active=true" \
+              -F "verified=false" \
+              -F "close_old_findings=true" \
+              -F "deduplication_on_engagement=true" || true
+          else
+            echo "⚠️  reports/semgrep.sarif introuvable, upload sauté"
+          fi
+        continue-on-error: true
+
       - name: List remaining findings
         run: python3 scripts/list_remaining_findings.py
 
