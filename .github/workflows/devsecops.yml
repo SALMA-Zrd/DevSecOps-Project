@@ -154,7 +154,7 @@ jobs:
             "${{ secrets.DEFECTDOJO_URL }}/api/v2/reimport-scan/" \
             -H "Authorization: Token ${{ secrets.DEFECTDOJO_API_KEY }}" \
             -F "engagement=${{ secrets.DEFECTDOJO_ENGAGEMENT }}" \
-            -F "product_name=OWASP Juice Shop"
+            -F "product_name=OWASP Juice Shop" \
             -F "scan_type=SARIF" \
             -F "test_title=Trivy Image Scan" \
             -F "file=@trivy-image.sarif" \
@@ -214,7 +214,7 @@ jobs:
             "${{ secrets.DEFECTDOJO_URL }}/api/v2/reimport-scan/" \
             -H "Authorization: Token ${{ secrets.DEFECTDOJO_API_KEY }}" \
             -F "engagement=${{ secrets.DEFECTDOJO_ENGAGEMENT }}" \
-            -F "product_name=OWASP Juice Shop"
+            -F "product_name=OWASP Juice Shop" \
             -F "scan_type=SARIF" \
             -F "test_title=Trivy Filesystem Scan" \
             -F "file=@trivy-fs.sarif" \
@@ -297,7 +297,7 @@ jobs:
             "${{ secrets.DEFECTDOJO_URL }}/api/v2/reimport-scan/" \
             -H "Authorization: Token ${{ secrets.DEFECTDOJO_API_KEY }}" \
             -F "engagement=${{ secrets.DEFECTDOJO_ENGAGEMENT }}" \
-            -F "product_name=OWASP Juice Shop"
+            -F "product_name=OWASP Juice Shop" \
             -F "scan_type=SARIF" \
             -F "test_title=Trivy IaC Scan" \
             -F "file=@trivy-iac.sarif" \
@@ -389,7 +389,7 @@ jobs:
             "${{ secrets.DEFECTDOJO_URL }}/api/v2/reimport-scan/" \
             -H "Authorization: Token ${{ secrets.DEFECTDOJO_API_KEY }}" \
             -F "engagement=${{ secrets.DEFECTDOJO_ENGAGEMENT }}" \
-            -F "product_name=OWASP Juice Shop"
+            -F "product_name=OWASP Juice Shop" \
             -F "scan_type=SARIF" \
             -F "test_title=Semgrep SAST" \
             -F "file=@semgrep.sarif" \
